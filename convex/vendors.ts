@@ -1,30 +1,44 @@
+// convex/vendors.ts
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { Doc, Id } from "./_generated/dataModel";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
-// Query to get a vendor by ID
-export const getVendorById = query({
-  args: { id: v.id("vendors") },
-  handler: async (ctx, args) => {
-    return await ctx.db.get(args.id);
-  },
-});
-
-// Get all vendors for a user
+// Fetch all vendors belonging to the current user
 export const getVendorsByUser = query({
-  args: { userId: v.id("users") },
+  args: {
+    userId: v.optional(v.id("users")),
+  },
+  returns: v.array(
+    v.object({
+      _id: v.id("vendors"),
+      vendorEid: v.string(),
+      name: v.string(),
+      address: v.string(),
+      city: v.string(),
+      state: v.string(),
+      zipCode: v.string(),
+      phone: v.string(),
+      userId: v.id("users"),
+      _creationTime: v.number(),
+    })
+  ),
   handler: async (ctx, args) => {
+    const authUserId = await getAuthUserId(ctx);
+    const userId = args.userId ?? authUserId;
+    if (!userId) {
+      return [];  // Return empty array if no user is authenticated
+    }
     return await ctx.db
       .query("vendors")
-      .withIndex("by_userId", (q) => q.eq("userId", args.userId))
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .order("asc")
       .collect();
   },
 });
 
-// Update a vendor
-export const updateVendor = mutation({
-  args: {
-    id: v.id("vendors"),
+// Create a new vendor for the current user
+export const addVendor = mutation({
+  args: v.object({
     vendorEid: v.string(),
     name: v.string(),
     address: v.string(),
@@ -32,34 +46,75 @@ export const updateVendor = mutation({
     state: v.string(),
     zipCode: v.string(),
     phone: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const { id, ...updates } = args;
-    return await ctx.db.patch(id, updates);
+  }),
+  returns: v.id("vendors"),
+  handler: async (ctx, { vendorEid, name, address, city, state, zipCode, phone }) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      throw new Error("Authentication required");
+    }
+    return await ctx.db.insert("vendors", {
+      vendorEid,
+      name,
+      address,
+      city,
+      state,
+      zipCode,
+      phone,
+      userId,
+    });
   },
 });
 
-// Create a new vendor
-export const createVendor = mutation({
-  args: {
-    vendorEid: v.string(),
-    name: v.string(),
-    address: v.string(),
-    city: v.string(),
-    state: v.string(),
-    zipCode: v.string(),
-    phone: v.string(),
-    userId: v.id("users"),
-  },
-  handler: async (ctx, args) => {
-    return await ctx.db.insert("vendors", args);
+// Update one or more fields on an existing vendor
+export const updateVendor = mutation({
+  args: v.object({
+    vendorId: v.id("vendors"),
+    vendorEid: v.optional(v.string()),
+    name: v.optional(v.string()),
+    address: v.optional(v.string()),
+    city: v.optional(v.string()),
+    state: v.optional(v.string()),
+    zipCode: v.optional(v.string()),
+    phone: v.optional(v.string()),
+  }),
+  returns: v.boolean(),
+  handler: async (ctx, { vendorId, ...patch }) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      throw new Error("Authentication required");
+    }
+    const vendor = await ctx.db.get(vendorId);
+    if (!vendor) {
+      throw new Error("Vendor not found");
+    }
+    if (vendor.userId.toString() !== userId.toString()) {
+      throw new Error("Not authorized to update this vendor");
+    }
+    await ctx.db.patch(vendorId, patch);
+    return true;
   },
 });
 
 // Delete a vendor
 export const deleteVendor = mutation({
-  args: { id: v.id("vendors") },
-  handler: async (ctx, args) => {
-    await ctx.db.delete(args.id);
+  args: v.object({
+    vendorId: v.id("vendors"),
+  }),
+  returns: v.boolean(),
+  handler: async (ctx, { vendorId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      throw new Error("Authentication required");
+    }
+    const vendor = await ctx.db.get(vendorId);
+    if (!vendor) {
+      throw new Error("Vendor not found");
+    }
+    if (vendor.userId.toString() !== userId.toString()) {
+      throw new Error("Not authorized to delete this vendor");
+    }
+    await ctx.db.delete(vendorId);
+    return true;
   },
 });

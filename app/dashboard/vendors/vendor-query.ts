@@ -1,13 +1,12 @@
 import { api } from "@/convex/_generated/api";
 import { useQuery } from "convex/react";
+import { convertVendorDocument } from "./vendor-schema";
 
 export function useVendorsQuery() {
-  // Query all non-archived vendors
-  // Changed from getVendors to getAllVendors to match the function name in vendors.ts
-  const vendors = useQuery(api.vendors.getAllVendors);
-
+  const vendorDocs = useQuery(api.vendors.getVendorsByUser, {});
+  const vendors = vendorDocs?.map(convertVendorDocument);
   return {
     vendors,
-    isLoading: vendors === undefined,
+    isLoading: vendorDocs === undefined,
   };
 }

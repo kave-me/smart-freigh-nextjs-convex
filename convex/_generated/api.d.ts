@@ -14,7 +14,6 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as auth from "../auth.js";
-import type * as flush from "../flush.js";
 import type * as http from "../http.js";
 import type * as seed from "../seed.js";
 import type * as trucks from "../trucks.js";
@@ -31,7 +30,6 @@ import type * as vendors from "../vendors.js";
  */
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
-  flush: typeof flush;
   http: typeof http;
   seed: typeof seed;
   trucks: typeof trucks;
