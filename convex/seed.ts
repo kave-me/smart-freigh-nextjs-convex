@@ -3,60 +3,56 @@ import { faker } from "@faker-js/faker";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 
-export default internalMutation({
+export const regenerateData = internalMutation({
   args: {},
   handler: async (ctx) => {
-    // Check if data already exists to avoid duplicates
+    // Delete all existing vendors and trucks
     const existingVendors = await ctx.db.query("vendors").collect();
-    if (existingVendors.length > 0) {
-      console.log("Vendors table already has data, skipping seed");
-      return;
+    for (const vendor of existingVendors) {
+      await ctx.db.delete(vendor._id);
     }
 
-    // Try to find an existing user first
+    const existingTrucks = await ctx.db.query("trucks").collect();
+    for (const truck of existingTrucks) {
+      await ctx.db.delete(truck._id);
+    }
+
+    // Get or create a test user
     const existingUsers = await ctx.db.query("users").collect();
     let userId: Id<"users">;
 
     if (existingUsers.length > 0) {
-      // Use an existing user if available
       userId = existingUsers[0]._id;
-      console.log(`Using existing user with ID: ${userId}`);
     } else {
-      // Create a test user with the required fields from @convex-dev/auth
-      // These fields are based on the authTables schema
       userId = await ctx.db.insert("users", {
         name: "Test User",
         email: "test@example.com",
-        // Required fields from authTables
         isAnonymous: false,
         emailVerificationTime: Date.now(),
-        // Remove or replace the tokenIdentifier field
-        // tokenIdentifier: `test:${Date.now()}`,
-        // If you need an authentication identifier, use the appropriate field
-        // from your auth schema, such as:
-        // identityId: `test:${Date.now()}`,
       });
-      console.log(`Created new test user with ID: ${userId}`);
     }
 
-    // Initialize Faker with a fixed seed for reproducible data
-    faker.seed(42);
 
-    // Create vendors with the valid user ID
-    for (let i = 0; i < 10; i++) {
-      await ctx.db.insert("vendors", {
-        vendorEid: faker.string.alphanumeric(10).toUpperCase(),
-        name: faker.company.name(),
-        address: faker.location.streetAddress(),
-        city: faker.location.city(),
-        state: faker.location.state(),
-        zipCode: faker.location.zipCode(),
-        phone: faker.phone.number(),
+    // Generate new trucks
+    const truckMakes = ['Freightliner', 'Peterbilt', 'Kenworth', 'Volvo', 'Mack', 'International'];
+    const bodyTypes = ['Dry Van', 'Reefer', 'Flatbed', 'Tanker', 'Box Truck', 'Dump Truck'];
+
+    for (let i = 0; i < 25; i++) {
+      const make = truckMakes[Math.floor(Math.random() * truckMakes.length)];
+      const bodyType = bodyTypes[Math.floor(Math.random() * bodyTypes.length)];
+      
+      await ctx.db.insert("trucks", {
+        truckEid: faker.string.alphanumeric(8).toUpperCase(),
+        make,
+        bodyType,
+        model: faker.vehicle.model(),
+        year: faker.number.int({ min: 2018, max: 2024 }),
+        vin: faker.vehicle.vin(),
         userId: userId,
         isArchived: false
       });
     }
-    
-    console.log("Vendors table seeded successfully");
+
+    return { success: true, message: "Data regenerated successfully" };
   },
 });

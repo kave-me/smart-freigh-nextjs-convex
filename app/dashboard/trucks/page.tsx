@@ -1,19 +1,24 @@
+"use client"
+
 import { ChartAreaInteractive } from "@/components/chart-area-interactive"
-import { DataTable } from "@/components/data-table"
-import { SectionCards } from "@/components/section-cards"
+import { DataTable } from "./trucks-data-table"
+import { TruckSectionCards } from "./truck-section-cards"
+import { useTrucksQuery } from "./truck-query"
 
-import data from "../data.json"
+export default function TrucksPage() {
+  const { trucks, isLoading } = useTrucksQuery();
 
-export default function Page() {
   return (
-    <>
-    <h1>trucks</h1>
-      <SectionCards />
-      <div className="px-4 lg:px-6">
+    <div className="space-y-8">
+      <TruckSectionCards trucks={trucks} isLoading={isLoading} />
+      
+      {/* <div className="px-4 lg:px-6">
         <ChartAreaInteractive />
-      </div>
-      <DataTable data={data} />
-    </>
+      </div> */}
 
+      <div className="px-4 lg:px-6">
+        <DataTable data={trucks || []} />
+      </div>
+    </div>
   )
 }
