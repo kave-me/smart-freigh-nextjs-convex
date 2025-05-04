@@ -20,5 +20,15 @@ export default defineSchema({
     phone: v.string(),
     userId: v.id("users"),
     isArchived: v.boolean(),
+  }),
+  trucks: defineTable({
+    truckEid: v.string(),
+    make: v.string(),
+    bodyType: v.string(),
+    model: v.string(),
+    year: v.number(),
+    vin: v.string(),
+    userId: v.id("users"),
+    isArchived: v.boolean(),
   })
 });
