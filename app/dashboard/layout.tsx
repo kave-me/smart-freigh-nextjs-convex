@@ -15,6 +15,12 @@ export default function RootLayout({
   const { isAuthenticated, isLoading } = useConvexAuth();
   const router = useRouter();
 
+  useEffect(() => {
+    if (!isAuthenticated && !isLoading) {
+      router.push("/signin");
+    }
+  }, [isAuthenticated, isLoading, router]);
+
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -22,12 +28,6 @@ export default function RootLayout({
       </div>
     );
   }
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/signin");
-    }
-  }, [isAuthenticated, router]);
 
   if (!isAuthenticated) {
     return null;

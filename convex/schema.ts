@@ -10,4 +10,15 @@ export default defineSchema({
   numbers: defineTable({
     value: v.number(),
   }),
+  vendors: defineTable({
+    vendorEid: v.string(),
+    name: v.string(),
+    address: v.string(),
+    city: v.string(),
+    state: v.string(),
+    zipCode: v.string(),
+    phone: v.string(),
+    userId: v.id("users"),
+    isArchived: v.boolean(),
+  })
 });

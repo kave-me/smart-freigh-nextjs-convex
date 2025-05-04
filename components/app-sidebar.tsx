@@ -2,14 +2,13 @@
 
 import * as React from "react"
 import {
-  Icon123,
-  Icon360View,
-  IconInnerShadowTop,
   IconMailFast
 } from "@tabler/icons-react"
+import { useQuery } from "convex/react"
 
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
+import { api } from "@/convex/_generated/api"
 import {
   Sidebar,
   SidebarContent,
@@ -23,11 +22,6 @@ import branding from "@/config/branding"
 import { LayoutDashboardIcon, UploadIcon, ListIcon, WrenchIcon, TruckIcon, BarChartIcon, SettingsIcon } from "lucide-react"
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
         title: "Dashboard",
@@ -68,6 +62,12 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const user = useQuery(api.users.getUser)
+  const defaultUser = {
+    name: "Guest",
+    email: "guest@example.com",
+    avatar: ""
+  }
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -91,8 +91,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        {user && <NavUser user={user} /> || <NavUser user={defaultUser} />}
       </SidebarFooter>
+      {/* </SidebarFooter> */}
     </Sidebar>
   )
 }
