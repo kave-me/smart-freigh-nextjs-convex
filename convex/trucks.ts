@@ -6,29 +6,35 @@ import { Doc, Id } from "./_generated/dataModel";
 export const getTruckById = query({
   args: { id: v.id("trucks") },
   handler: async (ctx, args) => {
-    return await ctx.db
-      .query("trucks")
-      .filter((q) => q.eq(q.field("_id"), args.id))
-      .unique();
+    return await ctx.db.get(args.id);
   },
 });
 
-// Get all trucks
-export const getAllTrucks = query({
-  args: {},
-  handler: async (ctx) => {
+// Get all trucks for a user
+export const getTrucksByUser = query({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
     return await ctx.db
       .query("trucks")
-      .filter((q) => q.eq(q.field("isArchived"), false))
+      .withIndex("by_userId", (q) => q.eq("userId", args.userId))
       .collect();
   },
 });
 
-// Archive a truck
-export const archiveTruck = mutation({
-  args: { id: v.id("trucks") },
+// Update a truck
+export const updateTruck = mutation({
+  args: {
+    id: v.id("trucks"),
+    truckEid: v.string(),
+    make: v.string(),
+    bodyType: v.string(),
+    model: v.string(),
+    year: v.number(),
+    vin: v.string(),
+  },
   handler: async (ctx, args) => {
-    return await ctx.db.patch(args.id, { isArchived: true });
+    const { id, ...updates } = args;
+    return await ctx.db.patch(id, updates);
   },
 });
 
@@ -44,9 +50,14 @@ export const createTruck = mutation({
     userId: v.id("users"),
   },
   handler: async (ctx, args) => {
-    return await ctx.db.insert("trucks", {
-      ...args,
-      isArchived: false,
-    });
+    return await ctx.db.insert("trucks", args);
+  },
+});
+
+// Delete a truck
+export const deleteTruck = mutation({
+  args: { id: v.id("trucks") },
+  handler: async (ctx, args) => {
+    await ctx.db.delete(args.id);
   },
 });
