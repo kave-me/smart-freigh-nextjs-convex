@@ -8,6 +8,15 @@ import { authTables } from "@convex-dev/auth/server";
 export default defineSchema({
   ...authTables,
 
+  users: defineTable({
+    tokenIdentifier: v.string(),
+    name: v.string(),
+    email: v.string(),
+    phoneNumber: v.string(),
+    password: v.string(),
+    avatar: v.string(),
+  }).index("by_token", ["tokenIdentifier"]),
+
   vendors: defineTable({
     vendorEid: v.string(),
     name: v.string(),

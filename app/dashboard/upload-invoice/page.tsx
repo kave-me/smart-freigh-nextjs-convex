@@ -7,11 +7,11 @@ import data from "../data.json"
 export default function Page() {
   return (
     <>
-    <h1 className="mx-auto">reports</h1>
-      {/* <SectionCards />
+    <h1 className="mx-auto">upload invoice</h1>
+      <SectionCards />
       <div className="px-4 lg:px-6">
         <ChartAreaInteractive />
-      </div> */}
+      </div>
       <DataTable data={data} />
     </>
 

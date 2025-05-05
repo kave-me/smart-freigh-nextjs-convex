@@ -29,11 +29,6 @@ const data = {
         icon: LayoutDashboardIcon,
     },
     {
-        title: "Upload Invoice",
-        url: "/dashboard/upload-invoice",
-        icon: UploadIcon,
-    },
-    {
         title: "Invoices",
         url: "/dashboard/invoices",
         icon: ListIcon,

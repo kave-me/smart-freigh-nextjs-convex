@@ -32,18 +32,20 @@ export function NavMain({
           <SidebarMenuItem className="flex items-center gap-2">
             <SidebarMenuButton
               tooltip="Upload Invoice"
-              className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
+              className={`bg-primary text-secondary-foreground/90 hover:bg-primary/90 hover:text-secondary-foreground cursor-pointer active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear ${pathname === "/dashboard/upload-invoice" ? "border border-primary" : ""}`}
             >
               <IconCirclePlusFilled />
-              <span>Upload Invoice</span>
+              <Link href={"/dashboard/upload-invoice"}>
+                <span >Upload Invoice</span>
+              </Link>
             </SidebarMenuButton>
             <Button
               size="icon"
-              className="size-8 group-data-[collapsible=icon]:opacity-0"
+              className={`size-8 group-data-[collapsible=icon]:opacity-0 ${pathname === "/dashboard/escalations" ? "border-primary" : ""}`}
               variant="outline"
             >
-              <IconListDetails />
-              <span className="sr-only">Esclations list</span>
+              <Link href={"/dashboard/escalations"}><IconListDetails className={pathname === "/dashboard/escalations" ? "text-primary" : ""} /></Link>
+              <span className="sr-only">Escalations list</span>
             </Button>
           </SidebarMenuItem>
         </SidebarMenu>
