@@ -23,6 +23,7 @@ import {
   BarChartIcon,
   SettingsIcon,
 } from "lucide-react";
+import Link from "next/link";
 
 const data = {
   navMain: [
@@ -75,12 +76,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="#">
+              <Link href="/">
                 <IconMailFast className="!size-5" />
                 <span className="text-base font-semibold">
                   {branding.company.name}
                 </span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
