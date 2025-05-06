@@ -20,15 +20,15 @@ export default defineSchema({
     userId: v.id("users"),
   }).index("by_userId", ["userId"]),
 
-  // trucks: defineTable({
-  //   truckEid: v.string(),
-  //   make: v.string(),
-  //   bodyType: v.string(),
-  //   model: v.string(),
-  //   year: v.number(),
-  //   vin: v.string(),
-  //   userId: v.id("users"),
-  // }).index("by_userId", ["userId"]),
+  trucks: defineTable({
+    truckEid: v.string(),
+    make: v.string(),
+    bodyType: v.string(),
+    model: v.string(),
+    year: v.number(),
+    vin: v.string(),
+    userId: v.id("users"),
+  }).index("by_userId", ["userId"]),
 
   // invoices: defineTable({
   //   invoiceEid: v.string(),

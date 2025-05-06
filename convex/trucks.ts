@@ -1,9 +1,29 @@
-// import { query, mutation } from "./_generated/server";
-// import { v } from "convex/values";
-// import { Doc, Id } from "./_generated/dataModel";
-// import { getAuthUserId } from "@convex-dev/auth/server";
+import { query, mutation } from "./_generated/server";
+import { v } from "convex/values";
+import { Doc, Id } from "./_generated/dataModel";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
-// // Query to get a truck by ID
+// Query to get a truck by ID
+export const getAllTrucks = query({
+  args: {},
+  returns: v.array(
+    v.object({
+      _id: v.id("trucks"),
+      truckEid: v.string(),
+      make: v.string(),
+      bodyType: v.string(),
+      model: v.string(),
+      year: v.number(),
+      vin: v.string(),
+      userId: v.id("users"),
+      _creationTime: v.number(),
+    })),
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("trucks").order("asc")
+      .collect();
+  },
+});
 // export const getTruckById = query({
 //   args: { id: v.id("trucks") },
 //   returns: v.union(v.object({

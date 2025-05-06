@@ -3,11 +3,20 @@
 import { ChartAreaInteractive } from "@/components/chart-area-interactive"
 import { DataTable } from "./trucks-data-table"
 import { TruckSectionCards } from "./truck-section-cards"
-import { useTrucksQuery } from "./truck-query"
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useEffect, useState } from "react";
+// import { useTrucksQuery } from "./truck-query"
 
 export default function TrucksPage() {
-  const { trucks, isLoading } = useTrucksQuery();
-
+  const trucks = useQuery(api.trucks.getAllTrucks, {});
+  const [isLoading, setLoading] = useState(true);
+  useEffect(() => {
+    // Only set loading to false when vendorDocs is no longer undefined
+    if (trucks !== undefined) {
+      setLoading(false);
+    }
+  }, [trucks]);
   return (
     <div className="space-y-8">
       <TruckSectionCards trucks={trucks} isLoading={isLoading} />
