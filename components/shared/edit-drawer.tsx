@@ -64,7 +64,7 @@ export function EditDrawer<T extends Record<string, any>>({
           <DrawerTitle>{title}</DrawerTitle>
           <DrawerDescription>{description}</DrawerDescription>
         </DrawerHeader>
-        <form onSubmit={handleSave} className="grid gap-4 p-4">
+        <form onSubmit={handleSave} className="grid gap-4 p-4 max-w-sm mx-auto">
           {fields.map(({ key, label }) => (
             <div key={key} className="flex flex-col">
               <Label htmlFor={key}>{label}</Label>

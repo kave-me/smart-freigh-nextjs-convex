@@ -3,14 +3,14 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import { useConvexAuth } from "convex/react";
+// import { useConvexAuth } from "convex/react";
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { isLoading } = useConvexAuth();
+  // const { isLoading } = useConvexAuth();
 
   // useEffect(() => {
   //   if (!isAuthenticated && !isLoading) {
@@ -18,13 +18,13 @@ export default function RootLayout({
   //   }
   // }, [isAuthenticated, isLoading, router]);
 
-  if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <p>Loading...</p>
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className="flex h-screen items-center justify-center">
+  //       <p>Loading...</p>
+  //     </div>
+  //   );
+  // }
 
 
 
