@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import branding from '@/config/branding';
 
 type ActionState = {
   error?: string;
@@ -32,7 +33,8 @@ export default function CompanyInfoPage() {
             <Input 
               id="companyName" 
               name="companyName" 
-              placeholder="Enter company name" 
+              placeholder={branding.company.name}
+              defaultValue={branding.company.name}
               required 
             />
           </div>
@@ -42,7 +44,8 @@ export default function CompanyInfoPage() {
               id="email" 
               name="email" 
               type="email" 
-              placeholder="Enter company email" 
+              placeholder={branding.company.email}
+              defaultValue={branding.company.email}
               required 
             />
           </div>
@@ -51,7 +54,8 @@ export default function CompanyInfoPage() {
             <Input 
               id="scac" 
               name="scac" 
-              placeholder="Enter SCAC" 
+              placeholder={branding.company.scac}
+              defaultValue={branding.company.scac}
               required 
             />
           </div>
@@ -60,7 +64,8 @@ export default function CompanyInfoPage() {
             <Input 
               id="homeDomicile" 
               name="homeDomicile" 
-              placeholder="Enter home domicile" 
+              placeholder={branding.company.domicile}
+              defaultValue={branding.company.domicile}
               required 
             />
           </div>
@@ -70,7 +75,8 @@ export default function CompanyInfoPage() {
               id="phoneNumber" 
               name="phoneNumber" 
               type="tel" 
-              placeholder="Enter phone number" 
+              placeholder={branding.company.phoneNumber}
+              defaultValue={branding.company.phoneNumber}
               required 
             />
           </div>
@@ -79,7 +85,7 @@ export default function CompanyInfoPage() {
             <Input 
               id="currency" 
               name="currency" 
-              placeholder="Enter currency" 
+              placeholder={branding.company.currency}
               defaultValue="USD"
               required 
             />

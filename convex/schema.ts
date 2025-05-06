@@ -7,8 +7,6 @@ import { authTables } from "@convex-dev/auth/server";
 // The schema provides more precise TypeScript types.
 export default defineSchema({
   ...authTables,
-
-
   vendors: defineTable({
     vendorEid: v.string(),
     name: v.string(),
@@ -38,24 +36,23 @@ export default defineSchema({
   //   totalAmount: v.number(),
   //   serviceReason: v.string(),
   //   notes: v.optional(v.string()),
-  //   status: v.object({
-  //     type: v.union(
-  //       v.literal("pending"),
-  //       v.literal("needs_review"),
-  //       v.literal("escalated"),
-  //       v.literal("completed")
-  //     ),
+  //   status:v.union(
+  //     v.literal("pending"),
+  //     v.literal("needs_review"),
+  //     v.literal("escalated"),
+  //     v.literal("completed")
+  //   ),
   //     updatedAt: v.number(),
   //     isFinalized: v.boolean(),
   //   }),
-  //   analysis: v.optional(v.object({
-  //     description: v.string(),
-  //     timestamp: v.number(),
-  //     items: v.array(v.object({
-  //       description: v.string(),
-  //       weight: v.number(),
-  //     })),
-  //   })),
+    // analysis: v.optional(v.object({
+    //   description: v.string(),
+    //   timestamp: v.number(),
+    //   items: v.array(v.object({
+    //     description: v.string(),
+    //     weight: v.number(),
+    //   })),
+    // })),
   //   escalation: v.optional(v.object({
   //     reason: v.string(),
   //     timestamp: v.number(),
