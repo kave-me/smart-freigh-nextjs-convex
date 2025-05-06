@@ -15,11 +15,11 @@ export default function RootLayout({
   const { isAuthenticated, isLoading } = useConvexAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    if (!isAuthenticated && !isLoading) {
-      router.push("/signin");
-    }
-  }, [isAuthenticated, isLoading, router]);
+  // useEffect(() => {
+  //   if (!isAuthenticated && !isLoading) {
+  //     router.push("/signin");
+  //   }
+  // }, [isAuthenticated, isLoading, router]);
 
   if (isLoading) {
     return (
@@ -29,9 +29,7 @@ export default function RootLayout({
     );
   }
 
-  if (!isAuthenticated) {
-    return null;
-  }
+
 
   return (
     <SidebarProvider

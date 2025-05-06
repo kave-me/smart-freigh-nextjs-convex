@@ -20,6 +20,6 @@
     "isolatedModules": true,
     "noEmit": true
   },
-  "include": ["./**/*", "../flush.ts"],
+  "include": ["./**/*", "flush.ts"],
   "exclude": ["./_generated"]
 }

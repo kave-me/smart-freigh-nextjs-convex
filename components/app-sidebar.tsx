@@ -57,7 +57,7 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const user = useQuery(api.users.getUser)
+  // const user = useQuery(api.users.getUser)
   const defaultUser = {
     name: "Guest",
     email: "guest@example.com",
@@ -86,7 +86,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>
       <SidebarFooter>
-        {user && <NavUser user={user} /> || <NavUser user={defaultUser} />}
+      <NavUser user={defaultUser} />
       </SidebarFooter>
       {/* </SidebarFooter> */}
     </Sidebar>
