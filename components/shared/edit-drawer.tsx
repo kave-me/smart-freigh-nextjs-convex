@@ -77,7 +77,7 @@ export function EditDrawer<T extends Record<string, any>>({
               />
             </div>
           ))}
-          <DrawerFooter className="flex justify-end space-x-2 col-span-2">
+          <DrawerFooter className="flex justify-end space-x-2 col-span-2 mx-auto">
             <Button className="w-full" type="submit">Save</Button>
             <Button className="w-full" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
           </DrawerFooter>
