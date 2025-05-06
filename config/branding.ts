@@ -11,6 +11,11 @@ export const branding = {
       description: "Intelligent freight escalation platform",
       logo: "/logo.svg", // Path to your logo file
       favicon: "/favicon.ico",
+      email: "email@company.com",
+      scac: "sampleSCAC",
+      domicile: "sampleDomicile",
+      phoneNumber: "+123456789",
+      currency: "USD"
     },
     
     // Theme colors (if needed outside of CSS)
@@ -37,6 +42,13 @@ export const branding = {
     copyright: {
       year: new Date().getFullYear(),
       text: "© Acme Inc. All rights reserved.",
+    },
+    defaultUser:{
+      email: "test@example.com",
+      name: "Keith",
+      avatar:"/avatars/default.png",
+      phoneNumber: "+134569873",
+      password: "5amplePa55!"
     }
   }
   
