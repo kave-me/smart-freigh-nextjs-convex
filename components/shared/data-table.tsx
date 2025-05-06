@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { useIsMobile } from "@/hooks/use-mobile";
 import {
   DndContext,
   closestCenter,
@@ -14,8 +13,7 @@ import {
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
   SortableContext,
-  verticalListSortingStrategy,
-  useSortable,
+  verticalListSortingStrategy
 } from "@dnd-kit/sortable";
 import {
   ColumnDef,
@@ -32,7 +30,6 @@ import {
 } from "@tanstack/react-table";
 
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -40,11 +37,8 @@ import {
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
 import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
+  Select, SelectContent,
+  SelectItem
 } from "@/components/ui/select";
 import {
   Table,
@@ -55,7 +49,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 
-import { IconGripVertical, IconChevronDown, IconPlus } from "@tabler/icons-react";
+import { IconChevronDown, IconPlus } from "@tabler/icons-react";
 
 interface DataTableProps<TData> {
   data: TData[];
@@ -65,21 +59,21 @@ interface DataTableProps<TData> {
   onAdd?: () => void;
 }
 
-function DragHandle({ id }: { id: string }) {
-  const { attributes, listeners } = useSortable({ id });
-  return (
-    <Button
-      {...attributes}
-      {...listeners}
-      variant="ghost"
-      size="icon"
-      className="text-muted-foreground hover:bg-transparent"
-    >
-      <IconGripVertical className="size-3" />
-      <span className="sr-only">Drag to reorder</span>
-    </Button>
-  );
-}
+// function DragHandle({ id }: { id: string }) {
+//   const { attributes, listeners } = useSortable({ id });
+//   return (
+//     <Button
+//       {...attributes}
+//       {...listeners}
+//       variant="ghost"
+//       size="icon"
+//       className="text-muted-foreground hover:bg-transparent"
+//     >
+//       <IconGripVertical className="size-3" />
+//       <span className="sr-only">Drag to reorder</span>
+//     </Button>
+//   );
+// }
 
 export function DataTable<TData extends { _id: string }>({ 
   data: initialData,
@@ -138,6 +132,7 @@ export function DataTable<TData extends { _id: string }>({
     enableRowSelection: true,
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function handleDragEnd(event: any) {
     const { active, over } = event;
     if (active && over && active.id !== over.id) {

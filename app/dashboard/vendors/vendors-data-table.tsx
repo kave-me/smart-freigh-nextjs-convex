@@ -1,7 +1,5 @@
 "use client";
 
-import React from "react";
-import { toast } from "sonner";
 import { IconBuildingStore } from "@tabler/icons-react";
 import { type ColumnDef } from "@tanstack/react-table";
 
@@ -46,21 +44,18 @@ const columns: ColumnDef<Vendor>[] = [
   {
     accessorKey: "city",
     header: "City",
-    cell: ({ row }) => (
-      <Badge variant="outline">{row.original.city}</Badge>
-    ),
+    cell: ({ row }) => <Badge variant="outline">{row.original.city}</Badge>,
   },
   {
     accessorKey: "state",
     header: "State",
-    cell: ({ row }) => (
-      <Badge variant="outline">{row.original.state}</Badge>
-    ),
+    cell: ({ row }) => <Badge variant="outline">{row.original.state}</Badge>,
   },
   {
     id: "actions",
     header: "Actions",
     cell: ({ row }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const handleSave = async (data: Vendor) => {
         // Implement your vendor update logic here
         // await updateVendor(data);

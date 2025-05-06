@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-// @ts-ignore
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import ConvexClientProvider from "@/components/ConvexClientProvider";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -31,9 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <ConvexAuthNextjsServerProvider>
-      <html lang="en"
-        suppressHydrationWarning
-      >
+      <html lang="en" suppressHydrationWarning>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
@@ -43,7 +40,6 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-
             <ConvexClientProvider>{children}</ConvexClientProvider>
             <Toaster /> {/* Add Toaster component */}
           </ThemeProvider>

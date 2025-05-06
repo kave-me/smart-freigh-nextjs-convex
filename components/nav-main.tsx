@@ -1,29 +1,31 @@
-"use client"
+"use client";
 
-import { IconCirclePlusFilled, IconListDetails, IconListLetters, IconMail } from "@tabler/icons-react"
-import { LucideIcon } from "lucide-react"
+import { IconCirclePlusFilled, IconListDetails } from "@tabler/icons-react";
+import { LucideIcon } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { usePathname } from "next/navigation"
-import Link from "next/link"
+} from "@/components/ui/sidebar";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 
 export function NavMain({
   items,
 }: {
   items: {
-    title: string
-    url: string
-    icon: LucideIcon | React.ComponentType<{ size?: number; className?: string }>
-  }[]
+    title: string;
+    url: string;
+    icon:
+      | LucideIcon
+      | React.ComponentType<{ size?: number; className?: string }>;
+  }[];
 }) {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   return (
     <SidebarGroup>
@@ -36,7 +38,7 @@ export function NavMain({
             >
               <IconCirclePlusFilled />
               <Link href={"/dashboard/upload-invoice"}>
-                <span >Upload Invoice</span>
+                <span>Upload Invoice</span>
               </Link>
             </SidebarMenuButton>
             <Button
@@ -44,7 +46,13 @@ export function NavMain({
               className={`size-8 group-data-[collapsible=icon]:opacity-0 ${pathname === "/dashboard/escalations" ? "border-primary" : ""}`}
               variant="outline"
             >
-              <Link href={"/dashboard/escalations"}><IconListDetails className={pathname === "/dashboard/escalations" ? "text-primary" : ""} /></Link>
+              <Link href={"/dashboard/escalations"}>
+                <IconListDetails
+                  className={
+                    pathname === "/dashboard/escalations" ? "text-primary" : ""
+                  }
+                />
+              </Link>
               <span className="sr-only">Escalations list</span>
             </Button>
           </SidebarMenuItem>
@@ -52,7 +60,10 @@ export function NavMain({
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton isActive={pathname === item.url} tooltip={item.title}>
+              <SidebarMenuButton
+                isActive={pathname === item.url}
+                tooltip={item.title}
+              >
                 {item.icon && <item.icon />}
                 <Link href={item.url}>
                   <span>{item.title}</span>
@@ -63,5 +74,5 @@ export function NavMain({
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
-  )
+  );
 }

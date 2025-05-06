@@ -4,16 +4,13 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { useConvexAuth } from "convex/react";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { isAuthenticated, isLoading } = useConvexAuth();
-  const router = useRouter();
+  const { isLoading } = useConvexAuth();
 
   // useEffect(() => {
   //   if (!isAuthenticated && !isLoading) {

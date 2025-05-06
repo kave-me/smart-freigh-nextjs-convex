@@ -1,5 +1,4 @@
 "use client";
-// @ts-ignore
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -19,7 +18,8 @@ export default function SignIn() {
           const formData = new FormData(e.target as HTMLFormElement);
           formData.set("flow", flow);
           void signIn("password", formData)
-            .catch((error:any) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .catch((error: any) => {
               setError(error.message);
             })
             .then(() => {

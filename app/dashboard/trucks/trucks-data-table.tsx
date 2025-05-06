@@ -1,7 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import React from "react";
-import { toast } from "sonner";
 import { IconTruck } from "@tabler/icons-react";
 import { type ColumnDef } from "@tanstack/react-table";
 

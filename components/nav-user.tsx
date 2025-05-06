@@ -7,8 +7,6 @@ import {
   IconNotification,
   IconUserCircle,
 } from "@tabler/icons-react"
-import { useMutation } from "convex/react"
-import { api } from "@/convex/_generated/api"
 
 import {
   Avatar,
@@ -30,10 +28,11 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { useAuthActions } from "@convex-dev/auth/react";
+import { useAuthActions } from "@convex-dev/auth/react"
 import branding from "@/config/branding"
 
 export function NavUser({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   user,
 }: {
   user: {

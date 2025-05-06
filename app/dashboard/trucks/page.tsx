@@ -1,8 +1,7 @@
 "use client"
 
-import { ChartAreaInteractive } from "@/components/chart-area-interactive"
 
-import { TruckSectionCards } from "./truck-section-cards"
+import { TruckSectionCards } from "./truck-section-cards";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useEffect, useState } from "react";

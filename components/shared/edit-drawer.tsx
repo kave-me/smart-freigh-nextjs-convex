@@ -30,6 +30,7 @@ interface EditDrawerProps<T> {
   onSave: (data: T) => Promise<void>;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function EditDrawer<T extends Record<string, any>>({ 
   title,
   description,
@@ -47,6 +48,7 @@ export function EditDrawer<T extends Record<string, any>>({
       await onSave(formData);
       toast.success(`${title} updated`);
       setOpen(false);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message || "Failed to update");
     }

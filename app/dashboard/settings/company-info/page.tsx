@@ -1,18 +1,12 @@
 'use client';
 
-import { useActionState, startTransition, use } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import branding from '@/config/branding';
 
-type ActionState = {
-  error?: string;
-  success?: string;
-};
 
-const initialState: ActionState = { error: '', success: '' };
 
 export default function CompanyInfoPage() {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {

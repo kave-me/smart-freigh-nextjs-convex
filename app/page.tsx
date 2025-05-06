@@ -1,10 +1,6 @@
 "use client";
 
-import { useConvexAuth, useMutation, useQuery } from "convex/react";
-import { api } from "../convex/_generated/api";
 import Link from "next/link";
-import { useAuthActions } from "@convex-dev/auth/react";
-import { useRouter } from "next/navigation";
 
 export default function Home() {
   return (
@@ -16,10 +12,8 @@ export default function Home() {
         <h1 className="text-4xl font-bold text-center">
           Convex + Next.js + Convex Auth
         </h1>
-   <Link href={"/dashboard"}>Dashboard</Link>
+        <Link href={"/dashboard"}>Dashboard</Link>
       </main>
     </>
   );
 }
-
-

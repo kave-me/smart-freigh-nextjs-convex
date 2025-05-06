@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react";
 import {
   IconTrendingDown,
   IconTrendingUp,
@@ -8,18 +8,21 @@ import {
   IconMapPin,
   IconDeviceAnalytics,
   IconCalendarStats,
-} from "@tabler/icons-react"
+} from "@tabler/icons-react";
 
-import { Badge } from "@/components/ui/badge"
-import { SectionCard } from "@/components/section-card"
-
+import { Badge } from "@/components/ui/badge";
+import { SectionCard } from "@/components/section-card";
 
 type VendorSectionCardsProps = {
-  vendors?: any[]
-  isLoading: boolean
-}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  vendors?: any[];
+  isLoading: boolean;
+};
 
-export function VendorSectionCards({ vendors, isLoading }: VendorSectionCardsProps) {
+export function VendorSectionCards({
+  vendors,
+  isLoading,
+}: VendorSectionCardsProps) {
   const metrics = useMemo(() => {
     if (!vendors?.length) {
       return {
@@ -28,15 +31,17 @@ export function VendorSectionCards({ vendors, isLoading }: VendorSectionCardsPro
         cityCount: 0,
         newVendors: 0,
         percentChange: "0.0",
-      }
+      };
     }
 
-    const uniqueStates = new Set(vendors.map(v => v.state))
-    const uniqueCities = new Set(vendors.map(v => v.city))
-    const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000
-    const newVendors = vendors.filter(v => v._creationTime > thirtyDaysAgo).length
+    const uniqueStates = new Set(vendors.map((v) => v.state));
+    const uniqueCities = new Set(vendors.map((v) => v.city));
+    const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    const newVendors = vendors.filter(
+      (v) => v._creationTime > thirtyDaysAgo,
+    ).length;
     const percentChange =
-      newVendors > 0 ? ((newVendors / vendors.length) * 100).toFixed(1) : "0.0"
+      newVendors > 0 ? ((newVendors / vendors.length) * 100).toFixed(1) : "0.0";
 
     return {
       totalVendors: vendors.length,
@@ -44,22 +49,26 @@ export function VendorSectionCards({ vendors, isLoading }: VendorSectionCardsPro
       cityCount: uniqueCities.size,
       newVendors,
       percentChange,
-    }
-  }, [vendors])
+    };
+  }, [vendors]);
 
-  const [growthTrend, setGrowthTrend] = useState<"up" | "down">("up")
+  const [growthTrend, setGrowthTrend] = useState<"up" | "down">("up");
 
   useEffect(() => {
-    setGrowthTrend(Math.random() > 0.3 ? "up" : "down")
-  }, [vendors])
+    setGrowthTrend(Math.random() > 0.3 ? "up" : "down");
+  }, [vendors]);
 
   const trendBadge = (
     <Badge variant="outline">
-      {growthTrend === "up" ? <IconTrendingUp className="size-4" /> : <IconTrendingDown className="size-4" />}
+      {growthTrend === "up" ? (
+        <IconTrendingUp className="size-4" />
+      ) : (
+        <IconTrendingDown className="size-4" />
+      )}
       {growthTrend === "up" ? "+" : "-"}
       {metrics.percentChange}%
     </Badge>
-  )
+  );
 
   return (
     <div className="grid grid-cols-1 gap-4 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
@@ -111,5 +120,5 @@ export function VendorSectionCards({ vendors, isLoading }: VendorSectionCardsPro
         }
       />
     </div>
-  )
+  );
 }

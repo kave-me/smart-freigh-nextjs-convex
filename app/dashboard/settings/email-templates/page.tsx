@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useState } from 'react';
@@ -6,8 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Trash2, Pencil, Plus } from 'lucide-react';
 
 // Example templates data structure
@@ -162,7 +162,7 @@ export default function EmailTemplatesTab() {
                 className="w-48 h-48 opacity-50" 
               />
             </div>
-            <p className="text-center text-muted-foreground mb-6">There's no Templates yet</p>
+            <p className="text-center text-muted-foreground mb-6">There&apos;s no Templates yet</p>
             <Button onClick={handleAddTemplate} variant="default">
               Add Email Template
             </Button>

@@ -2,7 +2,6 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import EmailTemplatesTab from './email-templates/page';
 
 export default function Layout({
   children,

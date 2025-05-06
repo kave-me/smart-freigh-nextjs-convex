@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react";
 import {
   IconTrendingDown,
   IconTrendingUp,
@@ -8,17 +8,21 @@ import {
   IconEngine,
   IconBuildingFactory,
   IconBarcode,
-} from "@tabler/icons-react"
+} from "@tabler/icons-react";
 
-import { Badge } from "@/components/ui/badge"
-import { SectionCard } from "@/components/section-card"
+import { Badge } from "@/components/ui/badge";
+import { SectionCard } from "@/components/section-card";
 
 type TruckSectionCardsProps = {
-  trucks?: any[]
-  isLoading: boolean
-}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  trucks?: any[];
+  isLoading: boolean;
+};
 
-export function TruckSectionCards({ trucks, isLoading }: TruckSectionCardsProps) {
+export function TruckSectionCards({
+  trucks,
+  isLoading,
+}: TruckSectionCardsProps) {
   const metrics = useMemo(() => {
     if (!trucks?.length) {
       return {
@@ -27,15 +31,17 @@ export function TruckSectionCards({ trucks, isLoading }: TruckSectionCardsProps)
         bodyTypeCount: 0,
         newTrucks: 0,
         percentChange: "0.0",
-      }
+      };
     }
 
-    const uniqueMakes = new Set(trucks.map(truck => truck.make))
-    const uniqueBodyTypes = new Set(trucks.map(truck => truck.bodyType))
-    const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000
-    const newTrucks = trucks.filter(truck => truck._creationTime > thirtyDaysAgo).length
+    const uniqueMakes = new Set(trucks.map((truck) => truck.make));
+    const uniqueBodyTypes = new Set(trucks.map((truck) => truck.bodyType));
+    const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    const newTrucks = trucks.filter(
+      (truck) => truck._creationTime > thirtyDaysAgo,
+    ).length;
     const percentChange =
-      newTrucks > 0 ? ((newTrucks / trucks.length) * 100).toFixed(1) : "0.0"
+      newTrucks > 0 ? ((newTrucks / trucks.length) * 100).toFixed(1) : "0.0";
 
     return {
       totalTrucks: trucks.length,
@@ -43,22 +49,26 @@ export function TruckSectionCards({ trucks, isLoading }: TruckSectionCardsProps)
       bodyTypeCount: uniqueBodyTypes.size,
       newTrucks,
       percentChange,
-    }
-  }, [trucks])
+    };
+  }, [trucks]);
 
-  const [growthTrend, setGrowthTrend] = useState<"up" | "down">("up")
+  const [growthTrend, setGrowthTrend] = useState<"up" | "down">("up");
 
   useEffect(() => {
-    setGrowthTrend(Math.random() > 0.3 ? "up" : "down")
-  }, [trucks])
+    setGrowthTrend(Math.random() > 0.3 ? "up" : "down");
+  }, [trucks]);
 
   const trendBadge = (
     <Badge variant="outline">
-      {growthTrend === "up" ? <IconTrendingUp className="size-4" /> : <IconTrendingDown className="size-4" />}
+      {growthTrend === "up" ? (
+        <IconTrendingUp className="size-4" />
+      ) : (
+        <IconTrendingDown className="size-4" />
+      )}
       {growthTrend === "up" ? "+" : "-"}
       {metrics.percentChange}%
     </Badge>
-  )
+  );
 
   return (
     <div className="grid grid-cols-1 gap-4 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
@@ -110,5 +120,5 @@ export function TruckSectionCards({ trucks, isLoading }: TruckSectionCardsProps)
         }
       />
     </div>
-  )
+  );
 }
