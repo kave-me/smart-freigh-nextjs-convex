@@ -1,11 +1,12 @@
 "use client"
 
 import { ChartAreaInteractive } from "@/components/chart-area-interactive"
-import { DataTable } from "./trucks-data-table"
+
 import { TruckSectionCards } from "./truck-section-cards"
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useEffect, useState } from "react";
+import { TrucksDataTable } from "./trucks-data-table";
 // import { useTrucksQuery } from "./truck-query"
 
 export default function TrucksPage() {
@@ -18,16 +19,14 @@ export default function TrucksPage() {
     }
   }, [trucks]);
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <TruckSectionCards trucks={trucks} isLoading={isLoading} />
-      
+
       {/* <div className="px-4 lg:px-6">
         <ChartAreaInteractive />
       </div> */}
 
-      <div className="px-4 lg:px-6">
-        <DataTable data={trucks || []} />
-      </div>
+      <TrucksDataTable data={trucks || []} />
     </div>
   )
 }
