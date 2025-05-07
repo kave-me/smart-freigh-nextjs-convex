@@ -24,26 +24,26 @@ export const getAllTrucks = query({
       .collect();
   },
 });
-// export const getTruckById = query({
-//   args: { id: v.id("trucks") },
-//   returns: v.union(v.object({
-//     _id: v.id("trucks"),
-//     _creationTime: v.number(),
-//     truckEid: v.string(),
-//     make: v.string(),
-//     bodyType: v.string(),
-//     model: v.string(),
-//     year: v.number(),
-//     vin: v.string(),
-//     userId: v.id("users"),
-//   }), v.null()),
-//   handler: async (ctx, args) => {
-//     return await ctx.db
-//       .query("trucks")
-//       .filter((q) => q.eq(q.field("_id"), args.id))
-//       .unique();
-//   },
-// });
+export const getTruckById = query({
+  args: { truckEid: v.id("truckEid") },
+  returns: v.union(v.object({
+    _id: v.id("trucks"),
+    _creationTime: v.number(),
+    truckEid: v.string(),
+    make: v.string(),
+    bodyType: v.string(),
+    model: v.string(),
+    year: v.number(),
+    vin: v.string(),
+    userId: v.id("users"),
+  }), v.null()),
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("trucks")
+      .filter((q) => q.eq(q.field("truckEid"), args.truckEid))
+      .unique();
+  },
+});
 
 // // Get all trucks for the current user
 // export const getAllTrucks = query({

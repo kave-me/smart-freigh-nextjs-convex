@@ -93,9 +93,19 @@ export const getAllInvoices = query({
 
 // Get invoice by ID
 export const getInvoiceById = query({
-  args: { invoiceId: v.id("invoices") },
+  args: { invoiceId: v.string() },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.invoiceId);
+    // Look up by your custom ID field
+    const invoice = await ctx.db
+      .query("invoices")
+      .filter(q => q.eq(q.field("invoiceEid"), args.invoiceId))
+      .first();
+    
+    if (!invoice) {
+      return null; // or throw an error
+    }
+    
+    return invoice;
   },
 });
 
