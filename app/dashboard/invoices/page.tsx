@@ -1,21 +1,27 @@
 
 
-export default function Page() {
-  return (
-    <>
-    {/* <h1 className="mx-auto">invoices</h1> */}
-      {/* <SectionCards />
-      <div className="px-4 lg:px-6">
-        <ChartAreaInteractive />
-      </div> */}
-      {/* <DataTable data={data} /> */}
-      <div className="flex flex-col items-center justify-center space-y-4 p-8 text-center">
-        <h1 className="text-3xl font-semibold">Invoice Dashboard</h1>
-        <p className="text-lg text-muted-foreground max-w-2xl">
-          Invoice listing is currently on wait to finish more important sections that are under development.
-        </p>
-      </div>
-    </>
+"use client"
 
+import { useQuery } from "convex/react"
+import { useEffect, useState } from "react"
+import { api } from "@/convex/_generated/api"
+import { InvoiceSectionCards } from "./invoice-section-cards"
+import { InvoicesDataTable } from "./invoices-data-table"
+
+export default function InvoicesPage() {
+  const invoices = useQuery(api.invoices.getAllInvoices, {})
+  const [isLoading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (invoices !== undefined) {
+      setLoading(false)
+    }
+  }, [invoices])
+
+  return (
+    <div className="space-y-6">
+      <InvoiceSectionCards invoices={invoices} isLoading={isLoading} />
+      <InvoicesDataTable data={invoices || []} />
+    </div>
   )
 }

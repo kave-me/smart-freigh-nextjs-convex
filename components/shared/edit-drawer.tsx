@@ -20,6 +20,8 @@ import { Label } from "@/components/ui/label";
 interface Field {
   key: string;
   label: string;
+  type?: 'text' | 'number' | 'date' | 'select';
+  options?: Array<{ value: string; label: string; }>;
 }
 
 interface EditDrawerProps<T> {
@@ -65,16 +67,32 @@ export function EditDrawer<T extends Record<string, any>>({
           <DrawerDescription>{description}</DrawerDescription>
         </DrawerHeader>
         <form onSubmit={handleSave} className="grid grid-cols-2 gap-4 p-4 max-w-lg mx-auto">
-          {fields.map(({ key, label }) => (
+          {fields.map(({ key, label, type = 'text', options }) => (
             <div key={key} className="flex flex-col">
               <Label htmlFor={key}>{label}</Label>
-              <Input
-                id={key}
-                value={formData[key]}
-                onChange={(e) =>
-                  setFormData({ ...formData, [key]: e.target.value })
-                }
-              />
+              {type === 'select' && options ? (
+                <select
+                  id={key}
+                  value={formData[key]}
+                  onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {options.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <Input
+                  id={key}
+                  type={type}
+                  value={formData[key]}
+                  onChange={(e) =>
+                    setFormData({ ...formData, [key]: type === 'number' ? Number(e.target.value) : e.target.value })
+                  }
+                />
+              )}
             </div>
           ))}
           <DrawerFooter className="flex justify-end space-x-2 col-span-2">
