@@ -28,20 +28,38 @@ export default defineSchema({
     userId: v.id("users"),
   }).index("by_userId", ["userId"]),
 
-  // invoices: defineTable({
-  //   invoiceEid: v.string(),
-  //   vendorId: v.id("vendors"),
-  //   truckId: v.id("trucks"),
-  //   dateIssued: v.number(),
-  //   totalAmount: v.number(),
-  //   serviceReason: v.string(),
-  //   notes: v.optional(v.string()),
-  //   status:v.union(
-  //     v.literal("pending"),
-  //     v.literal("needs_review"),
-  //     v.literal("escalated"),
-  //     v.literal("completed")
-  //   ),
+  invoices: defineTable({
+    invoiceEid: v.string(),
+    vendorId: v.id("vendors"),
+    truckId: v.id("trucks"),
+    userId: v.id("users"),
+    dateIssued: v.number(),
+    totalAmount: v.number(),
+    notes: v.optional(v.string()),
+    analysis: v.optional(
+      v.object({
+        description: v.string(),
+        timestamp: v.number(),
+        items: v.array(
+          v.object({
+            description: v.string(),
+            weight: v.number(),
+          })
+        ),
+      })
+    ),
+    items: v.array(
+      v.object({
+        description: v.string(),
+        quantity: v.number(),
+        unitCost: v.number(),
+        total: v.number(),
+      })
+    ),
+    status:v.union(
+      v.literal("needs_review"),
+      v.literal("escalated")
+    ),}),
   //     updatedAt: v.number(),
   //     isFinalized: v.boolean(),
   //   }),
