@@ -3,6 +3,7 @@
 
 import { IconTruck } from "@tabler/icons-react";
 import { type ColumnDef } from "@tanstack/react-table";
+import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/shared/data-table";
@@ -25,10 +26,10 @@ const columns: ColumnDef<Truck>[] = [
     accessorKey: "truckEid",
     header: () => "Truck ID",
     cell: ({ row }) => (
-      <div className="flex items-center gap-2">
+      <Link href={`/dashboard/trucks/${row.original.truckEid}`} className="flex items-center gap-2 hover:underline">
         <IconTruck className="size-4" />
         <span className="font-medium">{row.original.truckEid}</span>
-      </div>
+      </Link>
     ),
   },
   {

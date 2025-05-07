@@ -2,46 +2,53 @@ import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { Doc, Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
-
-// Query to get a truck by ID
-export const getAllTrucks = query({
-  args: {},
-  returns: v.array(
-    v.object({
-      _id: v.id("trucks"),
-      truckEid: v.string(),
-      make: v.string(),
-      bodyType: v.string(),
-      model: v.string(),
-      year: v.number(),
-      vin: v.string(),
-      userId: v.id("users"),
-      _creationTime: v.number(),
-    })),
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query("trucks").order("asc")
-      .collect();
-  },
-});
-export const getTruckById = query({
-  args: { truckEid: v.id("truckEid") },
-  returns: v.union(v.object({
-    _id: v.id("trucks"),
+export const getVendorsByTruckId = query({
+  args: { truckEid: v.string() },
+  returns: v.array(v.object({
+    _id: v.id("vendors"),
     _creationTime: v.number(),
-    truckEid: v.string(),
-    make: v.string(),
-    bodyType: v.string(),
-    model: v.string(),
-    year: v.number(),
-    vin: v.string(),
+    vendorEid: v.string(),
+    name: v.string(),
+    address: v.string(),
+    city: v.string(),
+    state: v.string(),
+    zipCode: v.string(),
+    phone: v.string(),
     userId: v.id("users"),
-  }), v.null()),
+  })),
   handler: async (ctx, args) => {
-    return await ctx.db
+    // First, find the truck by its truckEid
+    const truck = await ctx.db
       .query("trucks")
       .filter((q) => q.eq(q.field("truckEid"), args.truckEid))
       .unique();
+    
+    if (!truck) {
+      return [];
+    }
+    
+    // Then find all invoices related to this truck
+    const invoices = await ctx.db
+      .query("invoices")
+      .filter((q) => q.eq(q.field("truckId"), truck._id))
+      .collect();
+    
+    // Extract all vendor IDs from these invoices
+    const vendorIds = [...new Set(invoices.map(invoice => invoice.vendorId))];
+    
+    // Get all the vendors and filter out null values before returning
+    const vendorsWithNulls = await Promise.all(
+      vendorIds.map(async vendorId => {
+        const vendor = await ctx.db.get(vendorId);
+        return vendor;  // This might be null
+      })
+    );
+    
+    // Filter out any null vendors (in case some were deleted)
+    // TypeScript now knows we've removed null values
+    return vendorsWithNulls.filter((vendor): vendor is Doc<"vendors"> => 
+      vendor !== null && vendor !== undefined
+    );
   },
 });
 
