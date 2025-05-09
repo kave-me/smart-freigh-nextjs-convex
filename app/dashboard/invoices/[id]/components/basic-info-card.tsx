@@ -36,13 +36,16 @@ export default function BasicInfoCard({
 
   // Fetch all data using useQuery hooks (always at the top level)
   const invoice = useQuery(api.invoices.getById, { id: invoiceId });
+
+  // Use "skip" instead of null for conditional queries
   const vendorData = useQuery(
     api.vendors.getById,
-    invoice?.vendorId ? { id: invoice.vendorId } : null,
+    invoice?.vendorId ? { id: invoice.vendorId.toString() } : "skip",
   );
+
   const truckData = useQuery(
     api.trucks.getById,
-    invoice?.truckId ? { id: invoice.truckId } : null,
+    invoice?.truckId ? { id: invoice.truckId.toString() } : "skip",
   );
 
   // Create the data object to use in the component using useMemo
@@ -50,12 +53,16 @@ export default function BasicInfoCard({
     if (!invoice) return defaultData;
     return {
       vendorName: vendorData?.name || defaultData.vendorName,
-      truckId: truckData?.id || defaultData.truckId,
+      truckId:
+        truckData?.truckEid ||
+        (invoice?.truckId
+          ? invoice.truckId.toString().substring(0, 10) + "..."
+          : defaultData.truckId),
       issueDate: invoice?.dateIssued
         ? new Date(invoice.dateIssued).toISOString().split("T")[0]
         : defaultData.issueDate,
-      fuelType: invoice?.fuelType || defaultData.fuelType,
-      mileage: invoice?.mileage || defaultData.mileage,
+      fuelType: defaultData.fuelType, // Use default as this field doesn't exist in the schema
+      mileage: defaultData.mileage, // Use default as this field doesn't exist in the schema
       totalPrice: invoice?.totalAmount
         ? `$${invoice.totalAmount.toFixed(2)}`
         : defaultData.totalPrice,
