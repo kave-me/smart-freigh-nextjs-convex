@@ -29,6 +29,35 @@ export const getAllVendors = query({
   },
 });
 
+// Get vendor by ID
+export const getById = query({
+  args: { id: v.string() },
+  returns: v.object({
+    _id: v.id("vendors"),
+    vendorEid: v.string(),
+    name: v.string(),
+    address: v.string(),
+    city: v.string(),
+    state: v.string(),
+    zipCode: v.string(),
+    phone: v.string(),
+    userId: v.id("users"),
+    _creationTime: v.number(),
+  }),
+  handler: async (ctx, args) => {
+    const vendor = await ctx.db
+      .query("vendors")
+      .filter((q) => q.eq(q.field("vendorEid"), args.id))
+      .first();
+    
+    if (!vendor) {
+      throw new Error(`Vendor with ID ${args.id} not found`);
+    }
+    
+    return vendor;
+  },
+});
+
 // // Fetch all vendors belonging to the current user
 // export const getVendorsByUser = query({
 //   args: {
