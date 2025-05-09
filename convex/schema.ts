@@ -5,64 +5,78 @@ import { authTables } from "@convex-dev/auth/server";
 // The schema is normally optional, but Convex Auth
 // requires indexes defined on `authTables`.
 // The schema provides more precise TypeScript types.
-export default defineSchema({
-  ...authTables,
-  vendors: defineTable({
-    vendorEid: v.string(),
-    name: v.string(),
-    address: v.string(),
-    city: v.string(),
-    state: v.string(),
-    zipCode: v.string(),
-    phone: v.string(),
-    userId: v.id("users"),
-  }).index("by_userId", ["userId"]),
+export default defineSchema(
+  {
+    ...authTables,
+    vendors: defineTable({
+      vendorEid: v.string(),
+      name: v.string(),
+      address: v.string(),
+      city: v.string(),
+      state: v.string(),
+      zipCode: v.string(),
+      phone: v.string(),
+      userId: v.id("users"),
+    })
+      .index("by_userId", ["userId"])
+      .index("by_vendorEid", ["vendorEid"]),
 
-  trucks: defineTable({
-    truckEid: v.string(),
-    make: v.string(),
-    bodyType: v.string(),
-    model: v.string(),
-    year: v.number(),
-    vin: v.string(),
-    userId: v.id("users"),
-  }).index("by_userId", ["userId"]),
+    trucks: defineTable({
+      truckEid: v.string(),
+      make: v.string(),
+      bodyType: v.string(),
+      model: v.string(),
+      year: v.number(),
+      vin: v.string(),
+      userId: v.id("users"),
+    })
+      .index("by_userId", ["userId"])
+      .index("by_truckEid", ["truckEid"]),
 
-  invoices: defineTable({
-    invoiceEid: v.string(),
-    vendorId: v.id("vendors"),
-    truckId: v.id("trucks"),
-    userId: v.id("users"),
-    dateIssued: v.number(),
-    totalAmount: v.number(),
-    notes: v.optional(v.string()),
-    analysis: v.optional(
-      v.object({
-        description: v.string(),
-        timestamp: v.number(),
-        items: v.array(
-          v.object({
-            description: v.string(),
-            weight: v.number(),
-          })
-        ),
-      })
-    ),
-    items: v.array(
-      v.object({
-        description: v.string(),
-        quantity: v.number(),
-        unitCost: v.number(),
-        total: v.number(),
-      })
-    ),
-    status:v.union(
-      v.literal("needs_review"),
-      v.literal("escalated")
-    ),}),
-  //     updatedAt: v.number(),
-  //     isFinalized: v.boolean(),
-  //   }),
+    invoices: defineTable({
+      invoiceEid: v.string(),
+      vendorId: v.id("vendors"),
+      truckId: v.id("trucks"),
+      userId: v.id("users"),
+      dateIssued: v.number(),
+      totalAmount: v.number(),
+      notes: v.optional(v.string()),
+      analysis: v.optional(
+        v.object({
+          description: v.string(),
+          timestamp: v.number(),
+          items: v.array(
+            v.object({
+              description: v.string(),
+              weight: v.number(),
+            }),
+          ),
+        }),
+      ),
+      items: v.array(
+        v.object({
+          description: v.string(),
+          quantity: v.number(),
+          unitCost: v.number(),
+          total: v.number(),
+        }),
+      ),
+      status: v.union(
+        v.literal("needs_review"),
+        v.literal("approved"),
+        v.literal("rejected"),
+        v.literal("escalated"),
+      ),
+    })
+      .index("by_userId", ["userId"])
+      .index("by_vendorId", ["vendorId"])
+      .index("by_truckId", ["truckId"])
+      .index("by_invoiceEid", ["invoiceEid"])
+      .index("by_status", ["status"]),
+
+    //     updatedAt: v.number(),
+    //     isFinalized: v.boolean(),
+    //   }),
     // analysis: v.optional(v.object({
     //   description: v.string(),
     //   timestamp: v.number(),
@@ -71,24 +85,26 @@ export default defineSchema({
     //     weight: v.number(),
     //   })),
     // })),
-  //   escalation: v.optional(v.object({
-  //     reason: v.string(),
-  //     timestamp: v.number(),
-  //     resolved: v.boolean(),
-  //     resolvedAt: v.optional(v.number()),
-  //   })),
-  //   userId: v.id("users"),
-  // })
-  //   .index("by_userId", ["userId"])
-  //   .index("by_vendorId", ["vendorId"])
-  //   .index("by_truckId", ["truckId"])
-  //   .index("by_status", ["status.type"]),
+    //   escalation: v.optional(v.object({
+    //     reason: v.string(),
+    //     timestamp: v.number(),
+    //     resolved: v.boolean(),
+    //     resolvedAt: v.optional(v.number()),
+    //   })),
+    //   userId: v.id("users"),
+    // })
+    //   .index("by_userId", ["userId"])
+    //   .index("by_vendorId", ["vendorId"])
+    //   .index("by_truckId", ["truckId"])
+    //   .index("by_status", ["status.type"]),
 
-  // invoiceItems: defineTable({
-  //   invoiceId: v.id("invoices"),
-  //   description: v.string(),
-  //   quantity: v.number(),
-  //   unitCost: v.number(),
-  //   total: v.number(),
-  // }).index("by_invoice", ["invoiceId"]),
-},{schemaValidation: false,});
+    // invoiceItems: defineTable({
+    //   invoiceId: v.id("invoices"),
+    //   description: v.string(),
+    //   quantity: v.number(),
+    //   unitCost: v.number(),
+    //   total: v.number(),
+    // }).index("by_invoice", ["invoiceId"]),
+  },
+  { schemaValidation: false },
+);

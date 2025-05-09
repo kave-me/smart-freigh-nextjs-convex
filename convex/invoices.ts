@@ -1,5 +1,5 @@
 // convex/invoices.ts
-import { query } from "./_generated/server";
+import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
 // Fetch all invoices belonging to the current user
@@ -35,11 +35,16 @@ export const getAllInvoices = query({
           total: v.number(),
         }),
       ),
-      status: v.union(v.literal("needs_review"), v.literal("escalated")),
+      status: v.union(
+        v.literal("needs_review"),
+        v.literal("approved"),
+        v.literal("rejected"),
+        v.literal("escalated"),
+      ),
       _creationTime: v.number(),
     }),
   ),
-  handler: async (ctx, args) => {
+  handler: async (ctx) => {
     return await ctx.db
       .query("invoices") // Changed from "vendors" to "invoices"
       .order("desc") // Order by creation time, newest first
@@ -119,14 +124,19 @@ export const getById = query({
         total: v.number(),
       }),
     ),
-    status: v.union(v.literal("needs_review"), v.literal("escalated")),
+    status: v.union(
+      v.literal("needs_review"),
+      v.literal("approved"),
+      v.literal("rejected"),
+      v.literal("escalated"),
+    ),
     _creationTime: v.number(),
   }),
   handler: async (ctx, args) => {
     const invoice = await ctx.db
       .query("invoices")
-      .filter((q) => q.eq(q.field("invoiceEid"), args.id))
-      .first();
+      .withIndex("by_invoiceEid", (q) => q.eq("invoiceEid", args.id))
+      .unique();
 
     if (!invoice) {
       throw new Error(`Invoice with ID ${args.id} not found`);
@@ -156,8 +166,8 @@ export const getInvoiceAnalysis = query({
   handler: async (ctx, args) => {
     const invoice = await ctx.db
       .query("invoices")
-      .filter((q) => q.eq(q.field("invoiceEid"), args.invoiceId))
-      .first();
+      .withIndex("by_invoiceEid", (q) => q.eq("invoiceEid", args.invoiceId))
+      .unique();
 
     if (!invoice || !invoice.analysis) {
       return null;
@@ -196,8 +206,8 @@ export const getInvoiceItems = query({
   handler: async (ctx, args) => {
     const invoice = await ctx.db
       .query("invoices")
-      .filter((q) => q.eq(q.field("invoiceEid"), args.invoiceId))
-      .first();
+      .withIndex("by_invoiceEid", (q) => q.eq("invoiceEid", args.invoiceId))
+      .unique();
 
     if (!invoice) {
       return [];
@@ -225,8 +235,8 @@ export const getEscalationEmail = query({
   handler: async (ctx, args) => {
     const invoice = await ctx.db
       .query("invoices")
-      .filter((q) => q.eq(q.field("invoiceEid"), args.invoiceId))
-      .first();
+      .withIndex("by_invoiceEid", (q) => q.eq("invoiceEid", args.invoiceId))
+      .unique();
 
     if (!invoice) {
       throw new Error(`Invoice with ID ${args.invoiceId} not found`);
@@ -247,8 +257,8 @@ export const getInvoiceById = query({
     // Look up by your custom ID field
     const invoice = await ctx.db
       .query("invoices")
-      .filter((q) => q.eq(q.field("invoiceEid"), args.invoiceId))
-      .first();
+      .withIndex("by_invoiceEid", (q) => q.eq("invoiceEid", args.invoiceId))
+      .unique();
 
     if (!invoice) {
       return null; // or throw an error
@@ -258,33 +268,57 @@ export const getInvoiceById = query({
   },
 });
 
-// // Update invoice status
-// export const updateInvoiceStatus = mutation({
-//   args: {
-//     invoiceId: v.id("invoices"),
-//     status: v.union(
-//       v.literal("needs_review"),
-//       v.literal("escalated")
-//     ),
-//   },
-//   handler: async (ctx, args) => {
-//     const userId = await ctx.auth.getUserIdentity();
-//     if (!userId) {
-//       throw new Error("Not authenticated");
-//     }
+// Update invoice status
+export const updateInvoiceStatus = mutation({
+  args: {
+    invoiceId: v.union(v.id("invoices"), v.string()),
+    status: v.union(
+      v.literal("needs_review"),
+      v.literal("approved"),
+      v.literal("rejected"),
+      v.literal("escalated"),
+    ),
+  },
+  handler: async (ctx, args) => {
+    try {
+      // Handle both ID and string cases
+      let invoiceId;
 
-//     const invoice = await ctx.db.get(args.invoiceId);
-//     if (!invoice) {
-//       throw new Error("Invoice not found");
-//     }
+      if (typeof args.invoiceId === "string") {
+        // Look up by string ID/EID
+        const invoice = await ctx.db
+          .query("invoices")
+          .filter((q) => q.eq(q.field("invoiceEid"), args.invoiceId))
+          .unique();
 
-//     await ctx.db.patch(args.invoiceId, {
-//       status: args.status,
-//     });
+        if (!invoice) {
+          throw new Error(`Invoice with ID ${args.invoiceId} not found`);
+        }
 
-//     return args.invoiceId;
-//   },
-// });
+        invoiceId = invoice._id;
+      } else {
+        // Direct Convex ID
+        invoiceId = args.invoiceId;
+
+        // Verify the invoice exists
+        const invoice = await ctx.db.get(invoiceId);
+        if (!invoice) {
+          throw new Error(`Invoice not found`);
+        }
+      }
+
+      // Update the invoice status
+      await ctx.db.patch(invoiceId, {
+        status: args.status,
+      });
+
+      return true;
+    } catch (error) {
+      console.error("Error updating invoice status:", error);
+      throw error;
+    }
+  },
+});
 
 // // Add analysis to an invoice
 // export const addInvoiceAnalysis = mutation({
