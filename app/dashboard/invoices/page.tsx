@@ -12,7 +12,6 @@ export default function InvoicesPage() {
   const [isLoading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Only set loading to false when invoices is no longer undefined
     if (invoices !== undefined) {
       setLoading(false);
     }
