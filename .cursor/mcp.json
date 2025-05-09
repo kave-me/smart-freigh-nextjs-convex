@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "convex": {
+      "command": "npx",
+      "args": ["-y", "convex@latest", "mcp", "start"]
+    },
+    "codealive": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "E:\\work\\codealive-mcp",
+        "run",
+        "python",
+        "src\\codealive_mcp_server.py",
+        "--debug"
+      ],
+      "env": {
+        "CODEALIVE_API_KEY": "ca_1746796552092_0fFd8Kq7y7CYEpDanSXB23N0wZUCSnphB-qZkGA41kc"
+      }
+    }
+  }
+}
