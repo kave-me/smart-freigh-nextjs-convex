@@ -13,7 +13,7 @@ import {
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
   SortableContext,
-  verticalListSortingStrategy
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import {
   ColumnDef,
@@ -36,10 +36,7 @@ import {
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
-import {
-  Select, SelectContent,
-  SelectItem
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem } from "@/components/ui/select";
 import {
   Table,
   TableHeader,
@@ -57,6 +54,7 @@ interface DataTableProps<TData> {
   title: string;
   addButtonLabel?: string;
   onAdd?: () => void;
+  onRowClick?: (row: TData) => void;
 }
 
 // function DragHandle({ id }: { id: string }) {
@@ -75,12 +73,13 @@ interface DataTableProps<TData> {
 //   );
 // }
 
-export function DataTable<TData extends { _id: string }>({ 
+export function DataTable<TData extends { _id: string }>({
   data: initialData,
   columns,
   title,
   addButtonLabel,
   onAdd,
+  onRowClick,
 }: DataTableProps<TData>) {
   const [data, setData] = React.useState<TData[]>([]);
 
@@ -91,10 +90,16 @@ export function DataTable<TData extends { _id: string }>({
   }, [initialData]);
 
   const [rowSelection, setRowSelection] = React.useState({});
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    [],
+  );
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 10 });
+  const [pagination, setPagination] = React.useState({
+    pageIndex: 0,
+    pageSize: 10,
+  });
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -108,7 +113,7 @@ export function DataTable<TData extends { _id: string }>({
         tolerance: 5,
       },
     }),
-    useSensor(KeyboardSensor)
+    useSensor(KeyboardSensor),
   );
 
   const dataIds = React.useMemo(() => data.map((d) => d._id), [data]);
@@ -116,7 +121,13 @@ export function DataTable<TData extends { _id: string }>({
   const table = useReactTable({
     data,
     columns,
-    state: { rowSelection, columnVisibility, columnFilters, sorting, pagination },
+    state: {
+      rowSelection,
+      columnVisibility,
+      columnFilters,
+      sorting,
+      pagination,
+    },
     onRowSelectionChange: setRowSelection,
     onColumnVisibilityChange: setColumnVisibility,
     onColumnFiltersChange: setColumnFilters,
@@ -149,7 +160,7 @@ export function DataTable<TData extends { _id: string }>({
 
   return (
     <div className="w-full flex-col gap-6">
-      <div className="flex items-center justify-between px-4 lg:px-6 mb-4">
+      <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">{title}</h2>
         <div className="flex items-center gap-2">
           <DropdownMenu>
@@ -169,7 +180,7 @@ export function DataTable<TData extends { _id: string }>({
                   >
                     {col.id}
                   </DropdownMenuCheckboxItem>
-                ) : null
+                ) : null,
               )}
             </DropdownMenuContent>
           </DropdownMenu>
@@ -182,22 +193,33 @@ export function DataTable<TData extends { _id: string }>({
         </div>
       </div>
 
-      <div className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6">
-        <div className="overflow-hidden rounded-lg border">
+      <div className="relative flex flex-col gap-4 overflow-auto w-full">
+        <div className="overflow-hidden rounded-lg border w-full">
           <DndContext
             collisionDetection={closestCenter}
             modifiers={[restrictToVerticalAxis]}
             onDragEnd={handleDragEnd}
             sensors={sensors}
           >
-            <SortableContext items={dataIds} strategy={verticalListSortingStrategy}>
-              <Table>
+            <SortableContext
+              items={dataIds}
+              strategy={verticalListSortingStrategy}
+            >
+              <Table className="w-full table-fixed">
                 <TableHeader>
                   {table.getHeaderGroups().map((hg) => (
                     <TableRow key={hg.id}>
                       {hg.headers.map((h) => (
-                        <TableHead key={h.id} colSpan={h.colSpan}>
-                          {h.isPlaceholder ? null : typeof h.column.columnDef.header === "function" ? h.column.columnDef.header(h.getContext()) : h.column.columnDef.header}
+                        <TableHead
+                          key={h.id}
+                          colSpan={h.colSpan}
+                          className="overflow-hidden"
+                        >
+                          {h.isPlaceholder
+                            ? null
+                            : typeof h.column.columnDef.header === "function"
+                              ? h.column.columnDef.header(h.getContext())
+                              : h.column.columnDef.header}
                         </TableHead>
                       ))}
                     </TableRow>
@@ -206,17 +228,30 @@ export function DataTable<TData extends { _id: string }>({
                 <TableBody>
                   {table.getRowModel().rows.length ? (
                     table.getRowModel().rows.map((row) => (
-                      <TableRow key={row.id}>
+                      <TableRow
+                        key={row.id}
+                        onClick={() => onRowClick?.(row.original)}
+                        className={
+                          onRowClick ? "cursor-pointer hover:bg-muted" : ""
+                        }
+                      >
                         {row.getVisibleCells().map((cell) => (
-                          <TableCell key={cell.id}>
-                            {typeof cell.column.columnDef.cell === "function" ? cell.column.columnDef.cell(cell.getContext()) : cell.column.columnDef.cell}
+                          <TableCell key={cell.id} className="truncate">
+                            <div className="truncate max-w-[200px]">
+                              {typeof cell.column.columnDef.cell === "function"
+                                ? cell.column.columnDef.cell(cell.getContext())
+                                : cell.column.columnDef.cell}
+                            </div>
                           </TableCell>
                         ))}
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={columns.length} className="h-24 text-center">
+                      <TableCell
+                        colSpan={columns.length}
+                        className="h-24 text-center"
+                      >
                         No results.
                       </TableCell>
                     </TableRow>
@@ -227,9 +262,9 @@ export function DataTable<TData extends { _id: string }>({
           </DndContext>
         </div>
 
-        <div className="flex items-center justify-between px-4">
-          <div className="hidden flex-1 text-sm text-muted-foreground lg:flex">
-            {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} selected
+        <div className="flex items-center justify-between px-4 w-full">
+          <div className="flex-1 text-sm text-muted-foreground">
+            Showing {table.getRowModel().rows.length} of {data.length} rows
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -249,7 +284,8 @@ export function DataTable<TData extends { _id: string }>({
               {"<"}
             </Button>
             <span>
-              Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+              Page {table.getState().pagination.pageIndex + 1} of{" "}
+              {table.getPageCount()}
             </span>
             <Button
               variant="outline"
