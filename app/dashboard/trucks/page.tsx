@@ -1,5 +1,4 @@
-"use client"
-
+"use client";
 
 import { TruckSectionCards } from "./truck-section-cards";
 import { useQuery } from "convex/react";
@@ -27,5 +26,5 @@ export default function TrucksPage() {
 
       <TrucksDataTable data={trucks || []} />
     </div>
-  )
+  );
 }
