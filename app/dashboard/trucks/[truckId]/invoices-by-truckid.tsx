@@ -4,7 +4,14 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IconFileInvoice, IconLoader2 } from "@tabler/icons-react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
 
@@ -13,14 +20,20 @@ interface TruckInvoicesProps {
 }
 
 export default function TruckInvoices({ truckId }: TruckInvoicesProps) {
-  const invoices = useQuery(api.trucks.getInvoicesByTruckId, { truckEid: truckId });
+  const invoices = useQuery(api.trucks.getInvoicesByTruckId, {
+    truckEid: truckId,
+  });
 
-  const getStatusVariant = (status: "needs_review" | "escalated") => {
+  const getStatusVariant = (status: string) => {
     switch (status) {
       case "needs_review":
-        return "warning";
+        return "secondary";
       case "escalated":
         return "destructive";
+      case "approved":
+        return "default";
+      case "rejected":
+        return "outline";
       default:
         return "outline";
     }
@@ -59,12 +72,18 @@ export default function TruckInvoices({ truckId }: TruckInvoicesProps) {
             <TableBody>
               {invoices.map((invoice) => (
                 <TableRow key={invoice._id}>
-                  <TableCell className="font-medium">{invoice.invoiceEid}</TableCell>
-                  <TableCell>{new Date(invoice.dateIssued).toLocaleDateString()}</TableCell>
+                  <TableCell className="font-medium">
+                    {invoice.invoiceEid}
+                  </TableCell>
+                  <TableCell>
+                    {new Date(invoice.dateIssued).toLocaleDateString()}
+                  </TableCell>
                   <TableCell>{invoice.items.length} items</TableCell>
                   <TableCell>{formatCurrency(invoice.totalAmount)}</TableCell>
                   <TableCell>
-                    <Badge variant={getStatusVariant(invoice.status)}>{invoice.status.replace('_', ' ')}</Badge>
+                    <Badge variant={getStatusVariant(invoice.status)}>
+                      {invoice.status.replace("_", " ")}
+                    </Badge>
                   </TableCell>
                 </TableRow>
               ))}
