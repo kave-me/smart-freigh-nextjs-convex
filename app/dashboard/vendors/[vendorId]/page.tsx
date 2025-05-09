@@ -17,69 +17,66 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  IconTruck,
+  IconBuilding,
   IconEdit,
   IconCheck,
   IconX,
-  IconBuilding,
-  IconReceipt,
+  IconPhone,
+  IconMapPin,
   IconAlertTriangle,
   IconArrowLeft,
+  IconTruck,
+  IconReceipt,
 } from "@tabler/icons-react";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import Link from "next/link";
 
-export default function TruckDetailPage() {
+export default function VendorDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const truckId = params.truckId as string;
-  const truck = useQuery(api.trucks.getById, { id: truckId });
-  const vendors =
-    useQuery(api.trucks.getVendorsByTruckId, { truckEid: truckId }) || [];
+  const vendorId = params.vendorId as string;
+  const vendor = useQuery(api.vendors.getById, { id: vendorId });
+  const trucks =
+    useQuery(api.vendors.getTrucksByVendorId, { vendorEid: vendorId }) || [];
   const invoices =
-    useQuery(api.trucks.getInvoicesByTruckId, { truckEid: truckId }) || [];
-  const updateTruck = useMutation(api.trucks.updateTruck);
+    useQuery(api.vendors.getInvoicesByVendorId, { vendorEid: vendorId }) || [];
+  const updateVendor = useMutation(api.vendors.updateVendor);
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    truckEid: "",
-    make: "",
-    model: "",
-    year: "",
-    vin: "",
-    bodyType: "",
+    vendorEid: "",
+    name: "",
+    address: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    phone: "",
   });
 
-  // Load truck data into form when truck data is fetched
+  // Load vendor data into form when vendor data is fetched
   useEffect(() => {
-    if (truck) {
+    if (vendor) {
       setFormData({
-        truckEid: truck.truckEid,
-        make: truck.make,
-        model: truck.model,
-        year: truck.year.toString(),
-        vin: truck.vin,
-        bodyType: truck.bodyType,
+        vendorEid: vendor.vendorEid,
+        name: vendor.name,
+        address: vendor.address,
+        city: vendor.city,
+        state: vendor.state,
+        zipCode: vendor.zipCode,
+        phone: vendor.phone,
       });
       setError(null);
     }
-  }, [truck]);
+  }, [vendor]);
 
-  // Handle error case if truck is null
+  // Handle error case if vendor is null
   useEffect(() => {
-    if (truck === null) {
-      setError(`Truck with ID "${truckId}" not found`);
+    if (vendor === null) {
+      setError(`Vendor with ID "${vendorId}" not found`);
     }
-  }, [truck, truckId]);
+  }, [vendor, vendorId]);
 
-  if (truck === undefined) {
+  if (vendor === undefined) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
         <div className="text-lg text-muted-foreground">Loading...</div>
@@ -100,16 +97,16 @@ export default function TruckDetailPage() {
           <CardContent>
             <p className="mb-4">{error}</p>
             <p className="text-sm text-muted-foreground mb-4">
-              The truck you&apos;re looking for might have been deleted or the
+              The vendor you&apos;re looking for might have been deleted or the
               ID is incorrect.
             </p>
             <Button
               variant="outline"
-              onClick={() => router.push("/dashboard/trucks")}
+              onClick={() => router.push("/dashboard/vendors")}
               className="flex items-center"
             >
               <IconArrowLeft className="mr-2 size-4" />
-              Back to Trucks
+              Back to Vendors
             </Button>
           </CardContent>
         </Card>
@@ -117,10 +114,10 @@ export default function TruckDetailPage() {
     );
   }
 
-  if (truck === null) {
+  if (vendor === null) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
-        <div className="text-lg text-muted-foreground">Truck not found</div>
+        <div className="text-lg text-muted-foreground">Vendor not found</div>
       </div>
     );
   }
@@ -132,47 +129,42 @@ export default function TruckDetailPage() {
     });
   };
 
-  const handleSelectChange = (value: string, field: string) => {
-    setFormData({
-      ...formData,
-      [field]: value,
-    });
-  };
-
   const handleSave = async () => {
     try {
-      await updateTruck({
-        truckId: truck._id,
-        truckEid: formData.truckEid,
-        make: formData.make,
-        model: formData.model,
-        year: parseInt(formData.year),
-        vin: formData.vin,
-        bodyType: formData.bodyType,
+      await updateVendor({
+        vendorId: vendor._id,
+        vendorEid: formData.vendorEid,
+        name: formData.name,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        zipCode: formData.zipCode,
+        phone: formData.phone,
       });
 
       setIsEditing(false);
-      alert("Truck information updated successfully");
+      alert("Vendor information updated successfully");
       router.refresh();
     } catch (error) {
       const errorMessage =
         error instanceof Error
           ? error.message
-          : "Failed to update truck information";
+          : "Failed to update vendor information";
       alert(errorMessage);
-      console.error("Error updating truck:", error);
+      console.error("Error updating vendor:", error);
     }
   };
 
   const handleCancel = () => {
     // Reset form data to original values
     setFormData({
-      truckEid: truck.truckEid,
-      make: truck.make,
-      model: truck.model,
-      year: truck.year.toString(),
-      vin: truck.vin,
-      bodyType: truck.bodyType,
+      vendorEid: vendor.vendorEid,
+      name: vendor.name,
+      address: vendor.address,
+      city: vendor.city,
+      state: vendor.state,
+      zipCode: vendor.zipCode,
+      phone: vendor.phone,
     });
     setIsEditing(false);
   };
@@ -183,55 +175,33 @@ export default function TruckDetailPage() {
         <Button
           variant="outline"
           size="icon"
-          onClick={() => router.push("/dashboard/trucks")}
+          onClick={() => router.push("/dashboard/vendors")}
         >
           <IconArrowLeft className="size-4" />
         </Button>
-        <h1 className="text-2xl font-bold">Truck Details</h1>
+        <h1 className="text-2xl font-bold">Vendor Details</h1>
       </div>
 
-      {/* Truck Information Card */}
+      {/* Vendor Information Card */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-2xl font-bold">
             <div className="flex items-center gap-2">
-              <IconTruck className="size-6" />
+              <IconBuilding className="size-6" />
               {isEditing ? (
                 <Input
-                  name="truckEid"
-                  value={formData.truckEid}
+                  name="name"
+                  value={formData.name}
                   onChange={handleInputChange}
                   className="w-48"
                 />
               ) : (
-                truck.truckEid
+                vendor.name
               )}
             </div>
           </CardTitle>
           <div className="flex items-center gap-2">
-            <Badge variant="outline">
-              {isEditing ? (
-                <Select
-                  value={formData.bodyType}
-                  onValueChange={(value) =>
-                    handleSelectChange(value, "bodyType")
-                  }
-                >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Body Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Box Truck">Box Truck</SelectItem>
-                    <SelectItem value="Semi">Semi</SelectItem>
-                    <SelectItem value="Flatbed">Flatbed</SelectItem>
-                    <SelectItem value="Refrigerated">Refrigerated</SelectItem>
-                    <SelectItem value="Tanker">Tanker</SelectItem>
-                  </SelectContent>
-                </Select>
-              ) : (
-                truck.bodyType
-              )}
-            </Badge>
+            <Badge variant="outline">Vendor ID: {vendor.vendorEid}</Badge>
             {!isEditing && (
               <Button
                 variant="outline"
@@ -246,64 +216,84 @@ export default function TruckDetailPage() {
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="make" className="font-semibold">
-                Make
+              <Label htmlFor="address" className="font-semibold">
+                Address
               </Label>
               {isEditing ? (
                 <Input
-                  id="make"
-                  name="make"
-                  value={formData.make}
+                  id="address"
+                  name="address"
+                  value={formData.address}
                   onChange={handleInputChange}
                 />
               ) : (
-                <p>{truck.make}</p>
+                <p className="flex items-center gap-2">
+                  <IconMapPin className="size-4 text-muted-foreground" />
+                  {vendor.address}
+                </p>
               )}
             </div>
             <div>
-              <Label htmlFor="model" className="font-semibold">
-                Model
+              <Label htmlFor="phone" className="font-semibold">
+                Phone
               </Label>
               {isEditing ? (
                 <Input
-                  id="model"
-                  name="model"
-                  value={formData.model}
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
                   onChange={handleInputChange}
                 />
               ) : (
-                <p>{truck.model}</p>
+                <p className="flex items-center gap-2">
+                  <IconPhone className="size-4 text-muted-foreground" />
+                  {vendor.phone}
+                </p>
               )}
             </div>
             <div>
-              <Label htmlFor="year" className="font-semibold">
-                Year
+              <Label htmlFor="city" className="font-semibold">
+                City
               </Label>
               {isEditing ? (
                 <Input
-                  id="year"
-                  name="year"
-                  value={formData.year}
+                  id="city"
+                  name="city"
+                  value={formData.city}
                   onChange={handleInputChange}
-                  type="number"
                 />
               ) : (
-                <p>{truck.year}</p>
+                <p>{vendor.city}</p>
               )}
             </div>
             <div>
-              <Label htmlFor="vin" className="font-semibold">
-                VIN
+              <Label htmlFor="state" className="font-semibold">
+                State
               </Label>
               {isEditing ? (
                 <Input
-                  id="vin"
-                  name="vin"
-                  value={formData.vin}
+                  id="state"
+                  name="state"
+                  value={formData.state}
                   onChange={handleInputChange}
                 />
               ) : (
-                <p>{truck.vin}</p>
+                <p>{vendor.state}</p>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="zipCode" className="font-semibold">
+                ZIP Code
+              </Label>
+              {isEditing ? (
+                <Input
+                  id="zipCode"
+                  name="zipCode"
+                  value={formData.zipCode}
+                  onChange={handleInputChange}
+                />
+              ) : (
+                <p>{vendor.zipCode}</p>
               )}
             </div>
           </div>
@@ -330,52 +320,56 @@ export default function TruckDetailPage() {
         )}
       </Card>
 
-      {/* Vendors Card */}
+      {/* Trucks Card */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <IconBuilding className="size-5" />
-            Vendor Service History
+            <IconTruck className="size-5" />
+            Serviced Equipment
           </CardTitle>
-          <CardDescription>
-            Vendors that have serviced this truck
-          </CardDescription>
+          <CardDescription>Trucks serviced by this vendor</CardDescription>
         </CardHeader>
         <CardContent>
-          {vendors.length === 0 ? (
+          {trucks.length === 0 ? (
             <p className="text-muted-foreground text-center py-4">
-              No vendors have serviced this truck yet
+              No trucks serviced by this vendor yet
             </p>
           ) : (
             <div className="grid grid-cols-1 gap-4">
-              {vendors.map((vendor) => (
-                <Card key={vendor._id} className="overflow-hidden">
+              {trucks.map((truck) => (
+                <Card key={truck._id} className="overflow-hidden">
                   <div className="bg-muted p-4 flex justify-between items-center">
                     <div className="flex items-center gap-2">
-                      <IconBuilding className="size-5" />
-                      <span className="font-medium">{vendor.name}</span>
+                      <IconTruck className="size-5" />
+                      <span className="font-medium">
+                        {truck.make} {truck.model}
+                      </span>
                     </div>
-                    <Link href={`/dashboard/vendors/${vendor.vendorEid}`}>
+                    <Link href={`/dashboard/trucks/${truck.truckEid}`}>
                       <Button variant="outline" size="sm">
                         View Details
                       </Button>
                     </Link>
                   </div>
                   <CardContent className="pt-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                       <div>
                         <span className="text-sm text-muted-foreground">
-                          Phone:
+                          Year:
                         </span>
-                        <p>{vendor.phone}</p>
+                        <p>{truck.year}</p>
                       </div>
                       <div>
                         <span className="text-sm text-muted-foreground">
-                          Location:
+                          Type:
                         </span>
-                        <p>
-                          {vendor.city}, {vendor.state}
-                        </p>
+                        <p>{truck.bodyType}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm text-muted-foreground">
+                          ID:
+                        </span>
+                        <p>{truck.truckEid}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -391,14 +385,14 @@ export default function TruckDetailPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <IconReceipt className="size-5" />
-            Maintenance & Service History
+            Service History
           </CardTitle>
-          <CardDescription>Invoices related to this truck</CardDescription>
+          <CardDescription>Service invoices from this vendor</CardDescription>
         </CardHeader>
         <CardContent>
           {invoices.length === 0 ? (
             <p className="text-muted-foreground text-center py-4">
-              No invoices found for this truck
+              No invoices from this vendor yet
             </p>
           ) : (
             <div className="grid grid-cols-1 gap-4">

@@ -1,4 +1,11 @@
+import UnderConstruction from "@/components/under-constuction";
+import { Metadata } from "next";
 
+export const metadata: Metadata = {
+  title: "Dashboard | SmartFreight",
+  description:
+    "Manage your freight invoices and track escalations from your dashboard.",
+};
 
 export default function Page() {
   return (
@@ -8,13 +15,13 @@ export default function Page() {
         <ChartAreaInteractive />
       </div>
       <DataTable data={data} /> */}
-      <div className="flex flex-col items-center justify-center space-y-4 p-8 text-center">
+      {/* <div className="flex flex-col items-center justify-center space-y-4 p-8 text-center">
         <h1 className="text-3xl font-semibold">The Dashboard</h1>
         <p className="text-lg text-muted-foreground max-w-2xl">
           Dashboard system is currently on wait to finish more important sections that are under development.
         </p>
-      </div>
+      </div> */}
+      <UnderConstruction />
     </>
-
-  )
+  );
 }

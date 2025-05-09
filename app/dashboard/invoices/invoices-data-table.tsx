@@ -2,10 +2,9 @@
 
 import { IconReceipt, IconTruck, IconBuilding } from "@tabler/icons-react";
 import { type ColumnDef } from "@tanstack/react-table";
-import { formatDistance } from "date-fns";
 import { useRouter } from "next/navigation";
-
-import { Badge } from "@/components/ui/badge";
+import { formatDate, formatCurrency } from "@/lib/utils";
+import { StatusBadge, InvoiceStatus } from "@/app/hooks/use-status-badge";
 import { DataTable } from "@/components/shared/data-table";
 
 type InvoiceItem = {
@@ -32,24 +31,30 @@ type Invoice = {
   };
 };
 
-const statusColors: Record<string, string> = {
-  needs_review: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
-  approved: "bg-green-100 text-green-800 hover:bg-green-200",
-  paid: "bg-blue-100 text-blue-800 hover:bg-blue-200",
-  rejected: "bg-red-100 text-red-800 hover:bg-red-200",
-};
-
 export function InvoicesDataTable({ data }: { data: Invoice[] }) {
   const router = useRouter();
+
+  // Define row click handler
+  const handleRowClick = (invoiceEid: string) => {
+    router.push(`/dashboard/invoices/${invoiceEid}`);
+  };
 
   const columns: ColumnDef<Invoice>[] = [
     {
       accessorKey: "invoiceEid",
       header: () => "Invoice ID",
       cell: ({ row }) => (
-        <div className="flex items-center gap-2 cursor-pointer hover:underline" onClick={() => router.push(`/dashboard/invoices/${row.original.invoiceEid}`)}>
-          <IconReceipt className="size-4" />
-          <span className="font-medium">{row.original.invoiceEid}</span>
+        <div
+          className="flex items-center gap-2 cursor-pointer hover:underline truncate max-w-[120px]"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleRowClick(row.original.invoiceEid);
+          }}
+        >
+          <IconReceipt className="size-4 flex-shrink-0" />
+          <span className="font-medium truncate">
+            {row.original.invoiceEid}
+          </span>
         </div>
       ),
     },
@@ -57,8 +62,8 @@ export function InvoicesDataTable({ data }: { data: Invoice[] }) {
       accessorKey: "dateIssued",
       header: "Date Issued",
       cell: ({ row }) => (
-        <div>
-          {new Date(row.original.dateIssued).toLocaleDateString()}
+        <div className="truncate max-w-[100px]">
+          {formatDate(row.original.dateIssued)}
         </div>
       ),
     },
@@ -66,34 +71,32 @@ export function InvoicesDataTable({ data }: { data: Invoice[] }) {
       accessorKey: "totalAmount",
       header: "Total Amount",
       cell: ({ row }) => (
-        <div className="font-medium">${row.original.totalAmount.toFixed(2)}</div>
+        <div className="font-medium truncate max-w-[100px]">
+          {formatCurrency(row.original.totalAmount)}
+        </div>
       ),
     },
     {
       accessorKey: "status",
       header: "Status",
-      cell: ({ row }) => {
-        const status = row.original.status;
-        const colorClass = statusColors[status] || "bg-gray-100 text-gray-800 hover:bg-gray-200";
-        const displayStatus = status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
-        
-        return (
-          <Badge 
-            variant="outline" 
-            className={colorClass}
-          >
-            {displayStatus}
-          </Badge>
-        );
-      },
+      cell: ({ row }) => (
+        <div className="max-w-[120px]">
+          <StatusBadge
+            invoiceId={row.original._id}
+            initialStatus={row.original.status as InvoiceStatus}
+          />
+        </div>
+      ),
     },
     {
       accessorKey: "truckId",
       header: "Truck",
       cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <IconTruck className="size-4" />
-          <span>{row.original.truckId.substring(0, 8)}...</span>
+        <div className="flex items-center gap-2 truncate max-w-[100px]">
+          <IconTruck className="size-4 flex-shrink-0" />
+          <span className="truncate">
+            {row.original.truckId.substring(0, 8)}...
+          </span>
         </div>
       ),
     },
@@ -101,9 +104,11 @@ export function InvoicesDataTable({ data }: { data: Invoice[] }) {
       accessorKey: "vendorId",
       header: "Vendor",
       cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <IconBuilding className="size-4" />
-          <span>{row.original.vendorId.substring(0, 8)}...</span>
+        <div className="flex items-center gap-2 truncate max-w-[100px]">
+          <IconBuilding className="size-4 flex-shrink-0" />
+          <span className="truncate">
+            {row.original.vendorId.substring(0, 8)}...
+          </span>
         </div>
       ),
     },
@@ -112,10 +117,15 @@ export function InvoicesDataTable({ data }: { data: Invoice[] }) {
       header: "Analysis",
       cell: ({ row }) => {
         const analysis = row.original.analysis;
-        if (!analysis) return <div className="text-muted-foreground">No analysis available</div>;
-        
+        if (!analysis)
+          return (
+            <div className="text-muted-foreground truncate max-w-[200px]">
+              No analysis available
+            </div>
+          );
+
         return (
-          <div className="max-w-[300px] truncate text-sm text-muted-foreground">
+          <div className="max-w-[200px] truncate text-sm text-muted-foreground">
             {analysis.description}
           </div>
         );
@@ -124,7 +134,7 @@ export function InvoicesDataTable({ data }: { data: Invoice[] }) {
   ];
 
   const handleAddInvoice = () => {
-    // Implement your add invoice logic here
+    // Implement add invoice functionality
   };
 
   return (
@@ -134,7 +144,7 @@ export function InvoicesDataTable({ data }: { data: Invoice[] }) {
       title="Invoices"
       addButtonLabel="Add Invoice"
       onAdd={handleAddInvoice}
-      onRowClick={(row) => router.push(`/dashboard/invoices/${row.invoiceEid}`)}
+      onRowClick={(invoice) => handleRowClick(invoice.invoiceEid)}
     />
   );
 }

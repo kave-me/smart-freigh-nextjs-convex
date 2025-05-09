@@ -2,10 +2,10 @@
 
 import { IconBuildingStore } from "@tabler/icons-react";
 import { type ColumnDef } from "@tanstack/react-table";
+import { useRouter } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/shared/data-table";
-import { EditDrawer } from "@/components/shared/edit-drawer";
 
 type Vendor = {
   _id: string;
@@ -20,72 +20,72 @@ type Vendor = {
   userId: string;
 };
 
-const columns: ColumnDef<Vendor>[] = [
-  {
-    accessorKey: "name",
-    header: () => "Name",
-    cell: ({ row }) => (
-      <div className="flex items-center gap-2">
-        <IconBuildingStore className="size-4" />
-        <span className="font-medium">{row.original.name}</span>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "phone",
-    header: "Phone",
-    cell: ({ row }) => <div>{row.original.phone}</div>,
-  },
-  {
-    accessorKey: "address",
-    header: "Address",
-    cell: ({ row }) => <div>{row.original.address}</div>,
-  },
-  {
-    accessorKey: "city",
-    header: "City",
-    cell: ({ row }) => <Badge variant="outline">{row.original.city}</Badge>,
-  },
-  {
-    accessorKey: "state",
-    header: "State",
-    cell: ({ row }) => <Badge variant="outline">{row.original.state}</Badge>,
-  },
-  {
-    id: "actions",
-    header: "Actions",
-    cell: ({ row }) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const handleSave = async (data: Vendor) => {
-        // Implement your vendor update logic here
-        // await updateVendor(data);
-      };
-
-      return (
-        <EditDrawer
-          title="Edit Vendor"
-          description="Update vendor details"
-          fields={[
-            { key: "vendorEid", label: "Vendor ID" },
-            { key: "name", label: "Name" },
-            { key: "phone", label: "Phone" },
-            { key: "address", label: "Address" },
-            { key: "city", label: "City" },
-            { key: "state", label: "State" },
-            { key: "zipCode", label: "ZIP Code" },
-          ]}
-          data={row.original}
-          onSave={handleSave}
-        />
-      );
-    },
-  },
-];
-
 export function VendorsDataTable({ data }: { data: Vendor[] }) {
+  const router = useRouter();
+
   const handleAddVendor = () => {
-    // Implement your add vendor logic here
+    router.push("/dashboard/vendors/new");
   };
+
+  const handleRowClick = (vendor: Vendor) => {
+    router.push(`/dashboard/vendors/${vendor.vendorEid}`);
+  };
+
+  const columns: ColumnDef<Vendor>[] = [
+    {
+      accessorKey: "vendorEid",
+      header: "Vendor ID",
+      cell: ({ row }) => (
+        <div className="font-mono text-xs truncate max-w-[100px]">
+          {row.original.vendorEid}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "name",
+      header: () => "Name",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2 truncate max-w-[150px]">
+          <IconBuildingStore className="size-4 flex-shrink-0" />
+          <span className="font-medium truncate">{row.original.name}</span>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "phone",
+      header: "Phone",
+      cell: ({ row }) => (
+        <div className="truncate max-w-[120px]">{row.original.phone}</div>
+      ),
+    },
+    {
+      accessorKey: "address",
+      header: "Address",
+      cell: ({ row }) => (
+        <div className="truncate max-w-[180px]">{row.original.address}</div>
+      ),
+    },
+    {
+      accessorKey: "city",
+      header: "City",
+      cell: ({ row }) => (
+        <div className="max-w-[120px] truncate">
+          <Badge variant="outline" className="truncate max-w-full">
+            {row.original.city}
+          </Badge>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "state",
+      header: "State",
+      cell: ({ row }) => (
+        <div className="max-w-[80px]">
+          <Badge variant="outline">{row.original.state}</Badge>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <DataTable
@@ -94,6 +94,7 @@ export function VendorsDataTable({ data }: { data: Vendor[] }) {
       title="Vendors"
       addButtonLabel="Add Vendor"
       onAdd={handleAddVendor}
+      onRowClick={handleRowClick}
     />
   );
 }

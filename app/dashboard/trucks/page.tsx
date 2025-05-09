@@ -17,7 +17,7 @@ export default function TrucksPage() {
     }
   }, [trucks]);
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 lg:px-6 ">
       <TruckSectionCards trucks={trucks} isLoading={isLoading} />
 
       {/* <div className="px-4 lg:px-6">

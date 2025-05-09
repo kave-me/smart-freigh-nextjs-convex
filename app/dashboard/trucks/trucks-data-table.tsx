@@ -4,6 +4,7 @@
 import { IconTruck } from "@tabler/icons-react";
 import { type ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/shared/data-table";
@@ -21,79 +22,70 @@ type Truck = {
   userId: string;
 };
 
-const columns: ColumnDef<Truck>[] = [
-  {
-    accessorKey: "truckEid",
-    header: () => "Truck ID",
-    cell: ({ row }) => (
-      <Link href={`/dashboard/trucks/${row.original.truckEid}`} className="flex items-center gap-2 hover:underline">
-        <IconTruck className="size-4" />
-        <span className="font-medium">{row.original.truckEid}</span>
-      </Link>
-    ),
-  },
-  {
-    accessorKey: "make",
-    header: "Make",
-    cell: ({ row }) => <div>{row.original.make}</div>,
-  },
-  {
-    accessorKey: "model",
-    header: "Model",
-    cell: ({ row }) => <div>{row.original.model}</div>,
-  },
-  {
-    accessorKey: "year",
-    header: "Year",
-    cell: ({ row }) => <div>{row.original.year}</div>,
-  },
-  {
-    accessorKey: "bodyType",
-    header: "Body Type",
-    cell: ({ row }) => (
-      <Badge variant="outline">{row.original.bodyType}</Badge>
-    ),
-  },
-  {
-    accessorKey: "vin",
-    header: "VIN",
-    cell: ({ row }) => (
-      <span className="font-mono text-xs">{row.original.vin}</span>
-    ),
-  },
-  {
-    id: "actions",
-    header: "Actions",
-    cell: ({ row }) => {
-      const handleSave = async (data: Truck) => {
-        // Implement your truck update logic here
-        // await updateTruck(data);
-      };
-
-      return (
-        <EditDrawer
-          title="Edit Truck"
-          description="Update truck details"
-          fields={[
-            { key: "truckEid", label: "Truck ID" },
-            { key: "make", label: "Make" },
-            { key: "model", label: "Model" },
-            { key: "year", label: "Year" },
-            { key: "bodyType", label: "Body Type" },
-            { key: "vin", label: "VIN" },
-          ]}
-          data={row.original}
-          onSave={handleSave}
-        />
-      );
-    },
-  },
-];
-
 export function TrucksDataTable({ data }: { data: Truck[] }) {
+  const router = useRouter();
+
   const handleAddTruck = () => {
-    // Implement your add truck logic here
+    router.push("/dashboard/trucks/new");
   };
+
+  const handleRowClick = (truck: Truck) => {
+    router.push(`/dashboard/trucks/${truck.truckEid}`);
+  };
+
+  const columns: ColumnDef<Truck>[] = [
+    {
+      accessorKey: "truckEid",
+      header: () => "Truck ID",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2 truncate max-w-[120px]">
+          <IconTruck className="size-4 flex-shrink-0" />
+          <span className="font-medium truncate">{row.original.truckEid}</span>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "make",
+      header: "Make",
+      cell: ({ row }) => (
+        <div className="truncate max-w-[100px]">{row.original.make}</div>
+      ),
+    },
+    {
+      accessorKey: "model",
+      header: "Model",
+      cell: ({ row }) => (
+        <div className="truncate max-w-[120px]">{row.original.model}</div>
+      ),
+    },
+    {
+      accessorKey: "year",
+      header: "Year",
+      cell: ({ row }) => (
+        <div className="truncate max-w-[80px]">{row.original.year}</div>
+      ),
+    },
+    {
+      accessorKey: "bodyType",
+      header: "Body Type",
+      cell: ({ row }) => (
+        <div className="max-w-[120px] truncate">
+          <Badge variant="outline" className="truncate max-w-full">
+            {row.original.bodyType}
+          </Badge>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "vin",
+      header: "VIN",
+      cell: ({ row }) => (
+        <div className="font-mono text-xs truncate max-w-[140px]">
+          {row.original.vin}
+        </div>
+      ),
+    },
+  ];
 
   return (
     <DataTable
@@ -102,6 +94,7 @@ export function TrucksDataTable({ data }: { data: Truck[] }) {
       title="Trucks"
       addButtonLabel="Add Truck"
       onAdd={handleAddTruck}
+      onRowClick={handleRowClick}
     />
   );
 }

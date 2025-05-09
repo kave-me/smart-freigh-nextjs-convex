@@ -1,123 +1,119 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import {
-  IconTrendingDown,
-  IconTrendingUp,
-  IconReceipt,
-  IconCurrency,
-  IconAlertTriangle,
-  IconCalendarStats,
-} from "@tabler/icons-react";
+import { useMemo } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { STATUS_COLORS } from "@/app/hooks/use-status-badge";
 
-import { Badge } from "@/components/ui/badge";
-import { SectionCard } from "@/components/section-card";
+interface Invoice {
+  _id: string;
+  invoiceEid: string;
+  status: string;
+  totalAmount: number;
+  _creationTime: number;
+}
 
-type InvoiceSectionCardsProps = {
-  invoices?: any[];
+interface InvoiceSectionCardsProps {
+  invoices?: Invoice[];
   isLoading: boolean;
-};
+}
 
 export function InvoiceSectionCards({
   invoices,
   isLoading,
 }: InvoiceSectionCardsProps) {
-  const metrics = useMemo(() => {
-    if (!invoices?.length) {
-      return {
-        totalInvoices: 0,
-        totalAmount: 0,
-        needsReviewCount: 0,
-        newInvoices: 0,
-        percentChange: "0.0",
-      };
+  // Count invoices by status
+  const statusCounts = useMemo(() => {
+    const counts = {
+      needs_review: 0,
+      approved: 0,
+      rejected: 0,
+      escalated: 0,
+    };
+
+    if (invoices?.length) {
+      invoices.forEach((invoice) => {
+        const status = invoice.status as keyof typeof counts;
+        if (status in counts) {
+          counts[status]++;
+        }
+      });
     }
 
-    const totalAmount = invoices.reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
-    const needsReviewCount = invoices.filter(inv => inv.status === "needs_review").length;
-    const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
-    const newInvoices = invoices.filter(
-      (inv) => inv._creationTime > thirtyDaysAgo,
-    ).length;
-    const percentChange =
-      newInvoices > 0 ? ((newInvoices / invoices.length) * 100).toFixed(1) : "0.0";
-
-    return {
-      totalInvoices: invoices.length,
-      totalAmount: totalAmount.toFixed(2),
-      needsReviewCount,
-      newInvoices,
-      percentChange,
-    };
+    return counts;
   }, [invoices]);
 
-  const [growthTrend, setGrowthTrend] = useState<"up" | "down">("up");
-
-  useEffect(() => {
-    setGrowthTrend(Math.random() > 0.3 ? "up" : "down");
-  }, [invoices]);
-
-  const trendBadge = (
-    <Badge variant="outline">
-      {growthTrend === "up" ? (
-        <IconTrendingUp className="size-4" />
-      ) : (
-        <IconTrendingDown className="size-4" />
-      )}
-      {growthTrend === "up" ? "+" : "-"}
-      {metrics.percentChange}%
-    </Badge>
-  );
+  const totalInvoices = invoices?.length || 0;
 
   return (
-    <div className="grid grid-cols-1 gap-4 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
-      <SectionCard
-        loading={isLoading}
-        description="Total Invoices"
-        title={metrics.totalInvoices.toString()}
-        trendBadge={trendBadge}
-        footer={
-          <div className="flex items-center gap-1.5">
-            <IconReceipt className="size-4" />
-            <span className="text-sm text-muted-foreground">
-              {metrics.newInvoices} new invoices in the last 30 days
-            </span>
-          </div>
-        }
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <StatusCard
+        title="Needs Review"
+        value={statusCounts.needs_review}
+        total={totalInvoices}
+        statusColor={STATUS_COLORS.needs_review}
+        isLoading={isLoading}
       />
-      <SectionCard
-        loading={isLoading}
-        description="Total Amount"
-        title={`$${metrics.totalAmount}`}
-        icon={<IconCurrency className="size-5 text-muted-foreground" />}
-        footer={
-          <span className="text-sm text-muted-foreground">
-            Combined value of all invoices
-          </span>
-        }
+      <StatusCard
+        title="Approved"
+        value={statusCounts.approved}
+        total={totalInvoices}
+        statusColor={STATUS_COLORS.approved}
+        isLoading={isLoading}
       />
-      <SectionCard
-        loading={isLoading}
-        description="Needs Review"
-        title={metrics.needsReviewCount.toString()}
-        icon={<IconAlertTriangle className="size-5 text-muted-foreground" />}
-        footer={
-          <span className="text-sm text-muted-foreground">
-            Invoices requiring review and approval
-          </span>
-        }
+      <StatusCard
+        title="Rejected"
+        value={statusCounts.rejected}
+        total={totalInvoices}
+        statusColor={STATUS_COLORS.rejected}
+        isLoading={isLoading}
       />
-      <SectionCard
-        loading={isLoading}
-        description="New Invoices"
-        title={metrics.newInvoices.toString()}
-        icon={<IconCalendarStats className="size-5 text-muted-foreground" />}
-        footer={
-          <span className="text-sm text-muted-foreground">
-            Invoices added in the last 30 days
-          </span>
-        }
+      <StatusCard
+        title="Escalated"
+        value={statusCounts.escalated}
+        total={totalInvoices}
+        statusColor={STATUS_COLORS.escalated}
+        isLoading={isLoading}
       />
     </div>
+  );
+}
+
+interface StatusCardProps {
+  title: string;
+  value: number;
+  total: number;
+  statusColor: string;
+  isLoading: boolean;
+}
+
+function StatusCard({
+  title,
+  value,
+  total,
+  statusColor,
+  isLoading,
+}: StatusCardProps) {
+  const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        <div className={`w-4 h-4 rounded-full ${statusColor}`} />
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <Skeleton className="h-8 w-full" />
+        ) : (
+          <>
+            <div className="text-2xl font-bold">{value}</div>
+            <p className="text-xs text-muted-foreground">
+              {percentage}% of all invoices
+            </p>
+          </>
+        )}
+      </CardContent>
+    </Card>
   );
 }
