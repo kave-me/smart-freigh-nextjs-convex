@@ -1,4 +1,3 @@
-
 import { Bot, AlertCircle, RefreshCw } from "lucide-react";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,23 +13,25 @@ interface AIAnalysisCardProps {
   invoiceId: string;
   analysis?: InvoiceAnalysis;
   isUpdated: boolean;
-  onUpdate: (updatedData: any) => void;
+  onUpdate: (updatedData: { analysis: InvoiceAnalysis }) => void;
 }
 
 export default function AIAnalysisCard({
   invoiceId,
   analysis: initialAnalysis,
   isUpdated,
-  onUpdate
+  onUpdate,
 }: AIAnalysisCardProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [analysis, setAnalysis] = useState<InvoiceAnalysis | undefined>(initialAnalysis);
-  const [error, setError] = useState<Error | null>(null);
+  const [analysis, setAnalysis] = useState<InvoiceAnalysis | undefined>(
+    initialAnalysis,
+  );
+  const [error] = useState<Error | null>(null);
 
   // Fetch analysis from API if not provided
   const queryResult = useQuery(api.invoices.getInvoiceAnalysis, { invoiceId });
   const isQueryLoading = queryResult === undefined;
-  
+
   // Update analysis when query result changes
   useEffect(() => {
     if (queryResult && !isLoading && !analysis) {
@@ -40,7 +41,7 @@ export default function AIAnalysisCard({
 
   const handleRefreshAnalysis = () => {
     setIsLoading(true);
-    
+
     // Simulate API call to refresh AI analysis
     setTimeout(() => {
       const refreshedAnalysis = {
@@ -49,12 +50,13 @@ export default function AIAnalysisCard({
         issues: [
           "Preventive maintenance performed before scheduled date",
           "Previous maintenance record shows service 45 days ago",
-          "Company policy requires 90 days between preventive maintenance"
+          "Company policy requires 90 days between preventive maintenance",
         ],
-        description: "This invoice contains maintenance services that were performed too soon after the previous service, violating the company's maintenance schedule policy.",
-        items: analysis?.items || []
+        description:
+          "This invoice contains maintenance services that were performed too soon after the previous service, violating the company's maintenance schedule policy.",
+        items: analysis?.items || [],
       };
-      
+
       setAnalysis(refreshedAnalysis);
       onUpdate({ analysis: refreshedAnalysis });
       setIsLoading(false);
@@ -86,7 +88,9 @@ export default function AIAnalysisCard({
   }
 
   return (
-    <Card className={`border shadow-sm ${isUpdated ? 'border-green-500 bg-green-50 dark:bg-green-900/10' : ''}`}>
+    <Card
+      className={`border shadow-sm ${isUpdated ? "border-green-500 bg-green-50 dark:bg-green-900/10" : ""}`}
+    >
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
           <CardTitle className="text-lg font-medium flex items-center">
@@ -147,10 +151,10 @@ export default function AIAnalysisCard({
             {error ? (
               <>
                 <p className="text-sm text-red-500 mb-2">
-                  {error.message || 'Failed to load analysis'}
+                  {error.message || "Failed to load analysis"}
                 </p>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => window.location.reload()}
                 >
@@ -163,9 +167,9 @@ export default function AIAnalysisCard({
                 <p className="text-sm text-gray-500">
                   No AI analysis available for this invoice yet.
                 </p>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="mt-3"
                   onClick={handleRefreshAnalysis}
                   disabled={isLoading || isQueryLoading}

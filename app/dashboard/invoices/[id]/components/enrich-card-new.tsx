@@ -19,17 +19,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+interface InvoiceItem {
+  id: string;
+  description: string;
+  type: string;
+  quantity: number;
+  unitCost: number;
+  totalCost: number;
+  matchScore?: number;
+}
+
 interface EnrichCardProps {
-  items: Array<{
-    id: string;
-    description: string;
-    type: string;
-    quantity: number;
-    unitCost: number;
-    totalCost: number;
-    matchScore?: number;
-  }>;
-  onItemSelect: (item: any) => void;
+  items: InvoiceItem[];
+  onItemSelect: (item: InvoiceItem) => void;
 }
 
 interface EnrichmentOption {
@@ -40,7 +42,7 @@ interface EnrichmentOption {
   unitCost: number;
   totalCost: number;
   matchScore: number;
-  variant: 'green' | 'orange' | 'red';
+  variant: "green" | "orange" | "red";
 }
 
 export default function EnrichCard({ items, onItemSelect }: EnrichCardProps) {
@@ -54,49 +56,49 @@ export default function EnrichCard({ items, onItemSelect }: EnrichCardProps) {
         description: "3-in-1 Airline Set with Gladhands (15 feet)",
         type: "Part",
         quantity: 1,
-        unitCost: 165.00,
-        totalCost: 165.00,
+        unitCost: 165.0,
+        totalCost: 165.0,
         matchScore: 95,
-        variant: 'green'
+        variant: "green",
       },
       {
         id: "e2",
         description: "2-in-1 Airline Set with Gladhands (15 feet)",
         type: "Part",
         quantity: 1,
-        unitCost: 100.00,
-        totalCost: 100.00,
+        unitCost: 100.0,
+        totalCost: 100.0,
         matchScore: 85,
-        variant: 'orange'
+        variant: "orange",
       },
       {
         id: "e3",
         description: "Standard Airline Set (15 feet)",
         type: "Part",
         quantity: 1,
-        unitCost: 75.00,
-        totalCost: 75.00,
+        unitCost: 75.0,
+        totalCost: 75.0,
         matchScore: 75,
-        variant: 'red'
-      }
-    ]
+        variant: "red",
+      },
+    ],
   };
 
-  const handleItemClick = (item: any) => {
+  const handleItemClick = (item: InvoiceItem) => {
     setSelectedItemId(item.id);
     onItemSelect(item);
   };
 
-  const getBadgeColor = (variant: EnrichmentOption['variant']) => {
+  const getBadgeColor = (variant: EnrichmentOption["variant"]) => {
     switch (variant) {
-      case 'green':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300';
-      case 'orange':
-        return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300';
-      case 'red':
-        return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300';
+      case "green":
+        return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300";
+      case "orange":
+        return "bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300";
+      case "red":
+        return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300";
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300';
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300";
     }
   };
 
@@ -131,7 +133,10 @@ export default function EnrichCard({ items, onItemSelect }: EnrichCardProps) {
                     <DropdownMenuTrigger className="flex items-center gap-2">
                       {item.description}
                       {item.matchScore && (
-                        <Badge variant="outline" className="bg-green-100 text-green-800">
+                        <Badge
+                          variant="outline"
+                          className="bg-green-100 text-green-800"
+                        >
                           {item.matchScore}%
                         </Badge>
                       )}
@@ -140,7 +145,9 @@ export default function EnrichCard({ items, onItemSelect }: EnrichCardProps) {
                       {enrichmentOptions[item.id]?.map((option) => (
                         <DropdownMenuItem
                           key={option.id}
-                          onClick={() => handleItemClick({ ...item, ...option })}
+                          onClick={() =>
+                            handleItemClick({ ...item, ...option })
+                          }
                           className="flex flex-col items-start py-2"
                         >
                           <div className="flex items-center gap-2 w-full">

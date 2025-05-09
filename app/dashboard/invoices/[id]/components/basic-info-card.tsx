@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { FileText, Edit, Check, Loader2 } from "lucide-react";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,9 +11,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 interface BasicInfoCardProps {
   invoiceId: string;
-  onUpdate: (updatedData: any) => void;
+  onUpdate: (updatedData: Record<string, string>) => void;
   isUpdated: boolean;
 }
+
+// Default data to use while loading or if data is missing
+const defaultData = {
+  vendorName: "Hermiston, Krieger and West",
+  truckId: "k97cyd1sz34cdcvexdmg8ghq97icf9e",
+  issueDate: "2025-05-02",
+  fuelType: "Diesel",
+  mileage: "45,892",
+  totalPrice: "$4624.63",
+  assignedDriver: "N/A",
+};
 
 export default function BasicInfoCard({
   invoiceId,
@@ -22,20 +33,76 @@ export default function BasicInfoCard({
 }: BasicInfoCardProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  
-  // Fetch invoice data
+
+  // Fetch all data using useQuery hooks (always at the top level)
   const invoice = useQuery(api.invoices.getById, { id: invoiceId });
-  
-  // Fetch vendor data if we have a vendorId
-  const vendorData = invoice?.vendorId 
-    ? useQuery(api.vendors.getById, { id: invoice.vendorId }) 
-    : null;
-  
-  // Fetch truck data if we have a truckId
-  const truckData = invoice?.truckId 
-    ? useQuery(api.trucks.getById, { id: invoice.truckId }) 
-    : null;
-  
+  const vendorData = useQuery(
+    api.vendors.getById,
+    invoice?.vendorId ? { id: invoice.vendorId } : null,
+  );
+  const truckData = useQuery(
+    api.trucks.getById,
+    invoice?.truckId ? { id: invoice.truckId } : null,
+  );
+
+  // Create the data object to use in the component using useMemo
+  const data = useMemo(() => {
+    if (!invoice) return defaultData;
+    return {
+      vendorName: vendorData?.name || defaultData.vendorName,
+      truckId: truckData?.id || defaultData.truckId,
+      issueDate: invoice?.dateIssued
+        ? new Date(invoice.dateIssued).toISOString().split("T")[0]
+        : defaultData.issueDate,
+      fuelType: invoice?.fuelType || defaultData.fuelType,
+      mileage: invoice?.mileage || defaultData.mileage,
+      totalPrice: invoice?.totalAmount
+        ? `$${invoice.totalAmount.toFixed(2)}`
+        : defaultData.totalPrice,
+      assignedDriver: defaultData.assignedDriver, // This would come from a drivers table
+    };
+  }, [invoice, vendorData, truckData]);
+
+  // Initialize edit state (always at top level before any returns)
+  const [editableData, setEditableData] = useState({ ...data });
+
+  // Update editable data when real data changes
+  useEffect(() => {
+    if (invoice) {
+      setEditableData({ ...data });
+    }
+  }, [invoice, data]);
+
+  // Handler for edit toggle
+  const handleEditToggle = () => {
+    if (isEditing) {
+      setIsLoading(true);
+
+      // Simulate API call
+      setTimeout(() => {
+        onUpdate({
+          vendorName: editableData.vendorName,
+          truckId: editableData.truckId,
+          issueDate: editableData.issueDate,
+          fuelType: editableData.fuelType,
+          mileage: editableData.mileage,
+          totalPrice: editableData.totalPrice,
+          assignedDriver: editableData.assignedDriver,
+        });
+        setIsLoading(false);
+        setIsEditing(false);
+        toast.success("Basic info updated");
+      }, 1000);
+    } else {
+      setIsEditing(true);
+    }
+  };
+
+  // Handler for input changes
+  const handleInputChange = (field: string, value: string) => {
+    setEditableData((prev) => ({ ...prev, [field]: value }));
+  };
+
   // Loading state
   if (!invoice && !isLoading) {
     return (
@@ -57,52 +124,11 @@ export default function BasicInfoCard({
       </Card>
     );
   }
-  
-  // If we have data, use it; otherwise, use placeholders
-  const data = {
-    vendorName: vendorData?.name || "Hermiston, Krieger and West",
-    truckId: truckData?.id || "k97cyd1sz34cdcvexdmg8ghq97icf9e",
-    issueDate: invoice?.dateIssued ? new Date(invoice.dateIssued).toISOString().split('T')[0] : "2025-05-02",
-    fuelType: invoice?.fuelType || "Diesel",
-    mileage: invoice?.mileage || "45,892",
-    totalPrice: invoice?.totalAmount ? `$${invoice.totalAmount.toFixed(2)}` : "$4624.63",
-    assignedDriver: 'N/A', // This would come from a drivers table
-  };
-  
-  const [editableData, setEditableData] = useState({ ...data });
-  
-  // Handler for edit toggle
-  const handleEditToggle = () => {
-    if (isEditing) {
-      setIsLoading(true);
-      
-      // Simulate API call
-      setTimeout(() => {
-        onUpdate({
-          vendorName: editableData.vendorName,
-          truckId: editableData.truckId,
-          issueDate: editableData.issueDate,
-          fuelType: editableData.fuelType,
-          mileage: editableData.mileage,
-          totalPrice: editableData.totalPrice,
-          assignedDriver: editableData.assignedDriver,
-        });
-        setIsLoading(false);
-        setIsEditing(false);
-        toast.success("Basic info updated");
-      }, 1000);
-    } else {
-      setIsEditing(true);
-    }
-  };
-  
-  // Handler for input changes
-  const handleInputChange = (field: string, value: string) => {
-    setEditableData((prev) => ({ ...prev, [field]: value }));
-  };
 
   return (
-    <Card className={`shadow-md transition-all duration-200 ${isUpdated ? "border-green-500 bg-green-50/50" : ""}`}>
+    <Card
+      className={`shadow-md transition-all duration-200 ${isUpdated ? "border-green-500 bg-green-50/50" : ""}`}
+    >
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-md font-medium flex items-center">
           <FileText className="mr-2 h-5 w-5" />
@@ -131,7 +157,9 @@ export default function BasicInfoCard({
               <Input
                 id="vendorName"
                 value={editableData.vendorName}
-                onChange={(e) => handleInputChange("vendorName", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("vendorName", e.target.value)
+                }
               />
             ) : (
               <div className="text-sm mt-1">{data.vendorName}</div>
@@ -155,7 +183,9 @@ export default function BasicInfoCard({
               <Input
                 id="assignedDriver"
                 value={editableData.assignedDriver}
-                onChange={(e) => handleInputChange("assignedDriver", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("assignedDriver", e.target.value)
+                }
               />
             ) : (
               <div className="text-sm mt-1">{data.assignedDriver}</div>
@@ -204,7 +234,9 @@ export default function BasicInfoCard({
               <Input
                 id="totalPrice"
                 value={editableData.totalPrice}
-                onChange={(e) => handleInputChange("totalPrice", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("totalPrice", e.target.value)
+                }
               />
             ) : (
               <div className="text-sm mt-1 font-bold">{data.totalPrice}</div>
