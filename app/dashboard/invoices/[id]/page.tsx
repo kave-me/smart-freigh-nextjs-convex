@@ -51,7 +51,7 @@ export default function InvoiceDetailPage() {
   });
 
   // Default status if the invoice is not loaded yet
-  const currentStatus = invoice?.status || "needs_review";
+  const currentStatus = invoice?.status || "need_action";
 
   // These would normally come from your database
   // For now, we'll use mock IDs for demonstration that match Convex's ID format
@@ -83,17 +83,6 @@ export default function InvoiceDetailPage() {
     }, 2000);
   };
 
-  // Handle escalation
-  const handleEscalate = () => {
-    // Update the component state
-    setUpdatedComponent("escalation");
-
-    // Reset updated component after 2 seconds
-    setTimeout(() => {
-      setUpdatedComponent(null);
-    }, 2000);
-  };
-
   return (
     <div className="container p-6 space-y-6">
       {/* Header */}
@@ -111,9 +100,6 @@ export default function InvoiceDetailPage() {
             onStatusChange={handleStatusChange}
           />
         </div>
-        <Button variant="default" onClick={handleEscalate}>
-          Escalate Invoice
-        </Button>
       </div>
 
       {/* Main Content */}
@@ -215,7 +201,15 @@ export default function InvoiceDetailPage() {
         <EscalationEmailCard
           escalationEmail={undefined}
           invoiceId={id as string}
-          onEscalate={handleEscalate}
+          onEscalate={() => {
+            // Update the component state
+            setUpdatedComponent("escalation");
+
+            // Reset updated component after 2 seconds
+            setTimeout(() => {
+              setUpdatedComponent(null);
+            }, 2000);
+          }}
           onUpdate={(data) => updateInvoiceDetails(data, "escalation-email")}
           isUpdated={updatedComponent === "escalation-email"}
         />

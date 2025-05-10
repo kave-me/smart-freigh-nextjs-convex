@@ -19,7 +19,7 @@ type Invoice = {
   _creationTime: number;
   invoiceEid: string;
   dateIssued: number;
-  status: string;
+  status: "need_action" | "escalated";
   totalAmount: number;
   items: InvoiceItem[];
   truckId: string;
