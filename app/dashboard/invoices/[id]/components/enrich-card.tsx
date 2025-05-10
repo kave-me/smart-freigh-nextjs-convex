@@ -1,7 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
-import { WandSparkles, RefreshCw, Database } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import {
+  WandSparkles,
+  RefreshCw,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -24,6 +29,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { Id } from "@/convex/_generated/dataModel";
 
 interface EnrichmentItem {
   id: string;
@@ -41,12 +47,15 @@ interface EnrichCardProps {
   isUpdated: boolean;
 }
 
-// Template types for better typing
-type EnrichmentTemplate = {
-  id: string;
+// Business rule type for better typing
+interface BusinessRule {
+  _id: Id<"businessRules">;
   name: string;
   description: string;
-};
+  category: string;
+  isDefault: boolean;
+  isSystem: boolean;
+}
 
 export default function EnrichCard({
   invoiceId,
@@ -59,77 +68,119 @@ export default function EnrichCard({
   const [enrichedItems, setEnrichedItems] = useState<
     Record<string, EnrichmentItem | null>
   >({});
-  // Selected template
-  const [selectedTemplate, setSelectedTemplate] =
-    useState<EnrichmentTemplate | null>(null);
+  // Selected business rule
+  const [selectedBusinessRuleId, setSelectedBusinessRuleId] =
+    useState<Id<"businessRules"> | null>(null);
   // Loading state
   const [isLoading, setIsLoading] = useState(false);
+  // Track if there was an error loading the data
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  const enrichmentData = useQuery(api.invoices.getEnrichmentSuggestions, {
-    invoiceId,
-  });
-
-  // Mock templates - in the future, these would come from the backend
-  const enrichmentTemplates: EnrichmentTemplate[] = [
+  // Get enrichment data
+  const rawEnrichmentResponse = useQuery(
+    api.invoices.getEnrichmentSuggestions,
     {
-      id: "parts",
-      name: "Common Parts",
-      description: "Standard automotive parts",
+      invoiceId,
     },
-    {
-      id: "labor",
-      name: "Labor Rates",
-      description: "Common labor operations and rates",
-    },
-    {
-      id: "maintenance",
-      name: "Maintenance Kits",
-      description: "Common preventive maintenance kits",
-    },
-  ];
+  );
 
-  const handleTemplateSelect = (template: EnrichmentTemplate) => {
-    setIsLoading(true);
-    setSelectedTemplate(template);
+  // Process the response
+  const enrichmentData = React.useMemo(() => {
+    // Clear any previous errors when data loads successfully
+    if (rawEnrichmentResponse) {
+      setLoadError(null);
+      return rawEnrichmentResponse;
+    }
+    return undefined;
+  }, [rawEnrichmentResponse]);
 
-    // Simulate loading template data from backend
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success(`Template "${template.name}" applied`);
-    }, 1000);
-  };
-
+  // Handle errors better with refreshEnrichmentData
   const refreshEnrichmentData = () => {
     setIsLoading(true);
+    setLoadError(null);
+
     // Simulate refreshing data from backend
     setTimeout(() => {
       setIsLoading(false);
-      toast.success("Enrichment data refreshed");
+
+      // If we still don't have data, it might be an error
+      if (!rawEnrichmentResponse) {
+        setLoadError("Invoice not found or may have been deleted");
+      } else {
+        toast.success("Enrichment data refreshed");
+      }
     }, 1000);
   };
 
-  if (!enrichmentData) {
-    return (
-      <Card
-        className={cn(
-          "col-span-2",
-          isUpdated && "border-primary/50 bg-primary/5",
-        )}
-      >
-        <CardHeader className="pb-2">
-          <div className="flex items-center gap-2">
-            <WandSparkles className="h-5 w-5" />
-            <CardTitle className="text-lg font-medium">Enrich</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-48 w-full" />
-        </CardContent>
-      </Card>
-    );
-  }
+  // For MVP, mock the business rules since API generation might be pending
+  const mockBusinessRules: BusinessRule[] = [
+    {
+      _id: "businessRules_111111111111111111111111" as Id<"businessRules">,
+      name: "Standard Parts Pricing",
+      description: "Enforces standard pricing for common truck parts",
+      category: "Parts",
+      isDefault: true,
+      isSystem: true,
+    },
+    {
+      _id: "businessRules_222222222222222222222222" as Id<"businessRules">,
+      name: "Labor Rate Limits",
+      description: "Sets maximum allowed labor rates by region",
+      category: "Labor",
+      isDefault: false,
+      isSystem: true,
+    },
+    {
+      _id: "businessRules_333333333333333333333333" as Id<"businessRules">,
+      name: "Maintenance Schedule",
+      description: "Validates maintenance frequency against schedule",
+      category: "Maintenance",
+      isDefault: false,
+      isSystem: true,
+    },
+  ];
 
-  const items = enrichmentData?.items || [];
+  // Get active business rule - mocked for MVP
+  const mockActiveBusinessRule: BusinessRule = {
+    _id: "businessRules_111111111111111111111111" as Id<"businessRules">,
+    name: "Standard Parts Pricing",
+    description: "Enforces standard pricing for common truck parts",
+    category: "Parts",
+    isDefault: true,
+    isSystem: true,
+  };
+
+  // Set active business rule as default when no selection
+  useEffect(() => {
+    if (!selectedBusinessRuleId) {
+      setSelectedBusinessRuleId(mockActiveBusinessRule._id);
+    }
+  }, [selectedBusinessRuleId, mockActiveBusinessRule._id]);
+
+  const handleBusinessRuleSelect = async (rule: BusinessRule) => {
+    setIsLoading(true);
+    setSelectedBusinessRuleId(rule._id);
+
+    try {
+      // Mock API call for MVP
+      // In production, we would call the API
+      // await applyBusinessRule({
+      //   invoiceId: invoiceId as unknown as Id<"invoices">,
+      //   ruleId: rule._id,
+      // });
+
+      toast.success(`Business Rule Applied`, {
+        description: `"${rule.name}" has been applied to this invoice.`,
+      });
+    } catch (error) {
+      console.error("Error applying business rule:", error);
+      toast.error("Error", {
+        description: "Failed to apply business rule.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSuggestionSelect = (
     originalItemId: string,
@@ -159,6 +210,71 @@ export default function EnrichCard({
   const getDisplayItem = (originalItem: EnrichmentItem) => {
     return enrichedItems[originalItem.id] || originalItem;
   };
+
+  if (loadError) {
+    return (
+      <Card
+        className={cn(
+          "col-span-2",
+          isUpdated && "border-primary/50 bg-primary/5",
+        )}
+      >
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-2">
+            <WandSparkles className="h-5 w-5" />
+            <CardTitle className="text-lg font-medium">Enrich</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="py-6 text-center">
+            <p className="text-muted-foreground mb-2">
+              Unable to load enrichment data
+            </p>
+            <p className="text-sm text-destructive">{loadError}</p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-4"
+              onClick={() => {
+                setLoadError(null);
+                refreshEnrichmentData();
+              }}
+            >
+              Retry
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!enrichmentData) {
+    return (
+      <Card
+        className={cn(
+          "col-span-2",
+          isUpdated && "border-primary/50 bg-primary/5",
+        )}
+      >
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-2">
+            <WandSparkles className="h-5 w-5" />
+            <CardTitle className="text-lg font-medium">Enrich</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-48 w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const items = enrichmentData?.items || [];
+
+  // Get the currently selected business rule object
+  const currentBusinessRule =
+    mockBusinessRules.find((rule) => rule._id === selectedBusinessRuleId) ||
+    mockActiveBusinessRule;
 
   return (
     <Card
@@ -193,20 +309,42 @@ export default function EnrichCard({
                   className="gap-2"
                   disabled={isLoading}
                 >
-                  <Database className="h-4 w-4" />
-                  {selectedTemplate ? selectedTemplate.name : "Templates"}
+                  {currentBusinessRule ? (
+                    <>
+                      <CheckCircle2 className="h-4 w-4 text-primary" />
+                      {currentBusinessRule.name}
+                    </>
+                  ) : (
+                    <>
+                      <AlertCircle className="h-4 w-4 text-yellow-500" />
+                      No Business Rule
+                    </>
+                  )}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                {enrichmentTemplates.map((template) => (
+                {mockBusinessRules.map((rule) => (
                   <DropdownMenuItem
-                    key={template.id}
-                    onClick={() => handleTemplateSelect(template)}
+                    key={rule._id}
+                    onClick={() => handleBusinessRuleSelect(rule)}
+                    className={
+                      selectedBusinessRuleId === rule._id ? "bg-primary/10" : ""
+                    }
                   >
                     <div className="flex flex-col">
-                      <span>{template.name}</span>
+                      <div className="flex items-center">
+                        {selectedBusinessRuleId === rule._id && (
+                          <CheckCircle2 className="h-3 w-3 mr-1 text-primary" />
+                        )}
+                        <span>{rule.name}</span>
+                        <Badge variant="outline" className="ml-2 text-xs">
+                          {rule.category}
+                        </Badge>
+                      </div>
                       <span className="text-xs text-muted-foreground">
-                        {template.description}
+                        {rule.description.length > 60
+                          ? rule.description.substring(0, 60) + "..."
+                          : rule.description}
                       </span>
                     </div>
                   </DropdownMenuItem>
@@ -217,6 +355,18 @@ export default function EnrichCard({
         </div>
       </CardHeader>
       <CardContent>
+        {currentBusinessRule && (
+          <div className="mb-4 p-2 bg-primary/5 border border-primary/20 rounded-md">
+            <div className="flex items-center text-sm font-medium text-primary mb-1">
+              <CheckCircle2 className="h-4 w-4 mr-1" />
+              Using Business Rule: {currentBusinessRule.name}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {currentBusinessRule.description}
+            </p>
+          </div>
+        )}
+
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
