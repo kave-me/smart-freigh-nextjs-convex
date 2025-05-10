@@ -28,12 +28,12 @@ export default function TruckInvoices({ truckId }: TruckInvoicesProps) {
     switch (status) {
       case "needs_review":
         return "secondary";
+      case "in_process":
+        return "secondary";
+      case "completed":
+        return "default";
       case "escalated":
         return "destructive";
-      case "approved":
-        return "default";
-      case "rejected":
-        return "outline";
       default:
         return "outline";
     }

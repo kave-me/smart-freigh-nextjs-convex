@@ -35,6 +35,7 @@ import {
 } from "@tabler/icons-react";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export default function TruckDetailPage() {
   const params = useParams();
@@ -436,15 +437,12 @@ export default function TruckDetailPage() {
                           Status:
                         </span>
                         <Badge
-                          variant={
-                            invoice.status === "approved"
-                              ? "default"
-                              : invoice.status === "rejected"
-                                ? "destructive"
-                                : invoice.status === "escalated"
-                                  ? "secondary"
-                                  : "outline"
-                          }
+                          className={cn(
+                            "rounded-full px-2 py-1 text-xs font-semibold",
+                            invoice.status === "need_action"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-purple-100 text-purple-800",
+                          )}
                         >
                           {invoice.status
                             .replace("_", " ")
