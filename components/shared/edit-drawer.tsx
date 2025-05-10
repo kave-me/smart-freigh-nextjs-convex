@@ -20,8 +20,8 @@ import { Label } from "@/components/ui/label";
 interface Field {
   key: string;
   label: string;
-  type?: 'text' | 'number' | 'date' | 'select';
-  options?: Array<{ value: string; label: string; }>;
+  type?: "text" | "number" | "date" | "select";
+  options?: Array<{ value: string; label: string }>;
 }
 
 interface EditDrawerProps<T> {
@@ -33,7 +33,7 @@ interface EditDrawerProps<T> {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function EditDrawer<T extends Record<string, any>>({ 
+export function EditDrawer<T extends Record<string, any>>({
   title,
   description,
   fields,
@@ -50,7 +50,7 @@ export function EditDrawer<T extends Record<string, any>>({
       await onSave(formData);
       toast.success(`${title} updated`);
       setOpen(false);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message || "Failed to update");
     }
@@ -59,23 +59,31 @@ export function EditDrawer<T extends Record<string, any>>({
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
-        <Button variant="ghost" size="sm">Edit</Button>
+        <Button variant="ghost" size="sm">
+          Edit
+        </Button>
       </DrawerTrigger>
-      <DrawerContent className={mobile ? "h-full" : "h-[80vh]"} >
+      <DrawerContent className={mobile ? "h-full" : "h-[80vh]"}>
         <DrawerHeader>
           <DrawerTitle>{title}</DrawerTitle>
           <DrawerDescription>{description}</DrawerDescription>
         </DrawerHeader>
-        <form onSubmit={handleSave} className="grid grid-cols-2 gap-4 p-4 max-w-lg mx-auto">
-          {fields.map(({ key, label, type = 'text', options }) => (
+        <form
+          onSubmit={handleSave}
+          className="grid grid-cols-2 gap-4 p-4 max-w-lg mx-auto"
+        >
+          {fields.map(({ key, label, type = "text", options }) => (
             <div key={key} className="flex flex-col">
               <Label htmlFor={key}>{label}</Label>
-              {type === 'select' && options ? (
+              {type === "select" && options ? (
                 <select
                   id={key}
                   value={formData[key]}
-                  onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, [key]: e.target.value })
+                  }
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  aria-label={label}
                 >
                   {options.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -89,15 +97,29 @@ export function EditDrawer<T extends Record<string, any>>({
                   type={type}
                   value={formData[key]}
                   onChange={(e) =>
-                    setFormData({ ...formData, [key]: type === 'number' ? Number(e.target.value) : e.target.value })
+                    setFormData({
+                      ...formData,
+                      [key]:
+                        type === "number"
+                          ? Number(e.target.value)
+                          : e.target.value,
+                    })
                   }
                 />
               )}
             </div>
           ))}
           <DrawerFooter className="flex justify-end space-x-2 col-span-2">
-            <Button className="w-full" type="submit">Save</Button>
-            <Button className="w-full" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button className="w-full" type="submit">
+              Save
+            </Button>
+            <Button
+              className="w-full"
+              variant="outline"
+              onClick={() => setOpen(false)}
+            >
+              Cancel
+            </Button>
           </DrawerFooter>
         </form>
       </DrawerContent>

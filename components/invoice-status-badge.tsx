@@ -11,24 +11,24 @@ import { useDebounce } from "@/lib/hooks/use-debounce";
 // Status definitions
 export const STATUS_COLORS = {
   needs_review: "bg-yellow-500",
-  approved: "bg-green-500",
-  rejected: "bg-red-500",
-  escalated: "bg-blue-500",
+  in_process: "bg-blue-500",
+  completed: "bg-green-500",
+  escalated: "bg-purple-500",
 };
 
-export type InvoiceStatus = keyof typeof STATUS_COLORS;
+export type StatusType = keyof typeof STATUS_COLORS;
 
-export const STATUS_ORDER: InvoiceStatus[] = [
+export const STATUS_ORDER: StatusType[] = [
   "needs_review",
-  "approved",
-  "rejected",
+  "in_process",
+  "completed",
   "escalated",
 ];
 
 interface InvoiceStatusBadgeProps {
   invoiceId: Id<"invoices"> | string;
-  initialStatus: InvoiceStatus;
-  onStatusChange?: (newStatus: InvoiceStatus) => void;
+  initialStatus: StatusType;
+  onStatusChange?: (newStatus: StatusType) => void;
   className?: string;
 }
 
@@ -38,8 +38,8 @@ export function InvoiceStatusBadge({
   onStatusChange,
   className = "",
 }: InvoiceStatusBadgeProps) {
-  const [status, setStatus] = useState<InvoiceStatus>(initialStatus);
-  const debouncedStatus = useDebounce<InvoiceStatus>(status, 500);
+  const [status, setStatus] = useState<StatusType>(initialStatus);
+  const debouncedStatus = useDebounce<StatusType>(status, 500);
   const [isUpdating, setIsUpdating] = useState(false);
 
   // Get the updateInvoiceStatus mutation
