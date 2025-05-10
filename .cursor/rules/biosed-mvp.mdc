@@ -1,0 +1,9 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+No auth functionality is needed for the db and backend as I'm doing an mvp right now
+Authentication is not required for the MVP.
+
+During the MVP phase, the application must function fully without any authentication mechanism. Ensure that the database and backend can run without auth and that all features behave as expected in this unauthenticated state.
