@@ -7,11 +7,22 @@ export const seed = mutation({
   args: {},
   returns: v.null(),
   handler: async (ctx) => {
-    console.log("📋 Starting database seeding process...");
+    console.log(
+      "🚀 Starting complete database initialization and seeding process...",
+    );
 
-    // Clean existing data
-    console.log("🧹 Cleaning existing data...");
-    const tables = ["vendors", "trucks", "invoices"] as const;
+    // Step 1: Drop all existing data
+    console.log("🧹 Cleaning all existing data...");
+    const tables = [
+      "vendors",
+      "trucks",
+      "invoices",
+      "businessRules",
+      "businessRuleCategories",
+      "emailTemplates",
+      "userSettings",
+      "users",
+    ] as const;
 
     for (const table of tables) {
       console.log(`  - Cleaning ${table} table...`);
@@ -24,23 +35,38 @@ export const seed = mutation({
       console.log(`    ✅ ${table} table cleaned`);
     }
 
-    // Grab one existing user
-    console.log("👤 Finding a user to assign the data to...");
-    const users = await ctx.db.query("users").order("desc").take(1);
-    if (users.length === 0) {
-      console.error("❌ No users found in 'users' table");
-      throw new Error(
-        "No users found in 'users' table. Create at least one first with the createTestUser mutation.",
-      );
-    }
-    const userId: Id<"users"> = users[0]._id;
-    console.log(`  ✅ Using user with ID: ${userId}`);
+    // Step 2: Create test user
+    console.log("👤 Creating test user...");
+    const userId = await ctx.db.insert("users", {
+      name: "Test User",
+      email: "test@example.com",
+      isAnonymous: false,
+      clerkId: "test_" + Math.random().toString(36).substring(2, 15),
+    });
+    console.log(`  ✅ Test user created with ID: ${userId}`);
 
+    // Step 3: Create user settings
+    console.log("⚙️ Creating user settings...");
+    await ctx.db.insert("userSettings", {
+      userId,
+      name: "Test User",
+      email: "test@example.com",
+      phoneNumber: "+1-555-123-4567",
+      theme: "light",
+      notificationPreferences: {
+        emailNotifications: true,
+        smsNotifications: false,
+      },
+      businessSettings: {
+        companyName: "Smart Freight Test Company",
+        companyAddress: "123 Test Street, Test City, TS 12345",
+        taxId: "12-3456789",
+      },
+    });
+    console.log("  ✅ User settings created");
+
+    // Step 4: Seed vendors
     const vendorIds: Id<"vendors">[] = [];
-    const truckIds: Id<"trucks">[] = [];
-    const invoiceIds: Id<"invoices">[] = [];
-
-    // 1) Seed vendors
     const vendorCount = 50;
     console.log(`🏢 Seeding ${vendorCount} vendors...`);
     for (let i = 0; i < vendorCount; i++) {
@@ -68,7 +94,8 @@ export const seed = mutation({
     }
     console.log(`  ✅ Created ${vendorIds.length} vendors`);
 
-    // 2) Seed trucks
+    // Step 5: Seed trucks
+    const truckIds: Id<"trucks">[] = [];
     const truckCount = 50;
     console.log(`🚛 Seeding ${truckCount} trucks...`);
     const bodyTypes = ["Flatbed", "Box", "Reefer", "Tanker", "Dump"];
@@ -104,7 +131,8 @@ export const seed = mutation({
     }
     console.log(`  ✅ Created ${truckIds.length} trucks`);
 
-    // 3) Seed invoices
+    // Step 6: Seed invoices
+    const invoiceIds: Id<"invoices">[] = [];
     const invoiceCount = 100;
     console.log(`📄 Seeding ${invoiceCount} invoices...`);
     const serviceDescriptions = [
@@ -200,76 +228,97 @@ export const seed = mutation({
     }
     console.log(`  ✅ Created ${invoiceIds.length} invoices`);
 
-    // Log final summary
-    console.log("\n✅ Seeding completed successfully!");
-    console.log(`📊 Summary of created data:
-- ${vendorIds.length} vendors
-- ${truckIds.length} trucks
-- ${invoiceIds.length} invoices
-All associated with user: ${userId}`);
-
-    return null;
-  },
-});
-
-// Add seed function for business rules
-export const seedBusinessRules = mutation({
-  args: {},
-  handler: async (ctx) => {
-    // Find the first user (our test user)
-    const user = await ctx.db.query("users").first();
-    if (!user) throw new Error("No user found to seed data");
+    // Step 7: Seed business rules
+    console.log("📋 Creating business rule categories and rules...");
 
     // Create categories
     const warrantyCategoryId = await ctx.db.insert("businessRuleCategories", {
       name: "Warranty",
-      userId: user._id,
+      userId,
     });
 
     const partLaborCategoryId = await ctx.db.insert("businessRuleCategories", {
       name: "Part and Labor",
-      userId: user._id,
+      userId,
     });
 
     const etcCategoryId = await ctx.db.insert("businessRuleCategories", {
       name: "ETC",
-      userId: user._id,
+      userId,
     });
+    console.log("  ✅ Created business rule categories");
 
-    // Add rules to warranty category
-    await ctx.db.insert("businessRules", {
-      name: "Rule 2025",
-      categoryId: warrantyCategoryId,
-      enabled: true,
-      userId: user._id,
-    });
+    // Add rules to categories
+    const businessRulesMap = [
+      { name: "Rule 2025", categoryId: warrantyCategoryId, enabled: true },
+      { name: "Rule 2023", categoryId: warrantyCategoryId, enabled: false },
+      { name: "Rule 2022", categoryId: warrantyCategoryId, enabled: true },
+      { name: "Labor Rate", categoryId: partLaborCategoryId, enabled: true },
+      { name: "Part Markup", categoryId: partLaborCategoryId, enabled: true },
+      { name: "Misc Rule 1", categoryId: etcCategoryId, enabled: false },
+      { name: "Misc Rule 2", categoryId: etcCategoryId, enabled: true },
+    ];
 
-    await ctx.db.insert("businessRules", {
-      name: "Rule 2023",
-      categoryId: warrantyCategoryId,
-      enabled: false,
-      userId: user._id,
-    });
+    for (const rule of businessRulesMap) {
+      await ctx.db.insert("businessRules", {
+        ...rule,
+        userId,
+      });
+    }
+    console.log("  ✅ Created business rules");
 
-    await ctx.db.insert("businessRules", {
-      name: "Rule 2022",
-      categoryId: warrantyCategoryId,
-      enabled: false,
-      userId: user._id,
-    });
+    // Step 8: Create email templates
+    console.log("📧 Creating email templates...");
+    const templateData = [
+      {
+        name: "Invoice Reminder",
+        subject: "Reminder: Invoice Due Soon",
+        action: "reminder",
+        to: "customer@example.com",
+        from: "accounting@example.com",
+        body: "This is a friendly reminder that your invoice #{{invoiceNumber}} for ${{amount}} is due on {{dueDate}}. Please process payment at your earliest convenience.",
+      },
+      {
+        name: "Payment Confirmation",
+        subject: "Payment Received - Thank You",
+        action: "confirmation",
+        to: "customer@example.com",
+        from: "accounting@example.com",
+        body: "Thank you for your payment of ${{amount}} for invoice #{{invoiceNumber}}. Your payment has been processed successfully.",
+      },
+      {
+        name: "Late Payment Notice",
+        subject: "Important: Overdue Invoice",
+        action: "late_notice",
+        to: "customer@example.com",
+        from: "accounting@example.com",
+        bcc: "collections@example.com",
+        body: "We noticed that invoice #{{invoiceNumber}} for ${{amount}} is now {{daysPast}} days past due. Please arrange payment as soon as possible.",
+      },
+    ];
 
-    // Add rule to part & labor category
-    await ctx.db.insert("businessRules", {
-      name: "Parts 2025",
-      categoryId: partLaborCategoryId,
-      enabled: true,
-      userId: user._id,
-    });
+    for (const template of templateData) {
+      await ctx.db.insert("emailTemplates", {
+        ...template,
+        userId,
+      });
+    }
+    console.log("  ✅ Created email templates");
 
-    return {
-      warrantyCategoryId,
-      partLaborCategoryId,
-      etcCategoryId,
-    };
+    // Log final summary
+    console.log(
+      "\n✅ Database initialization and seeding completed successfully!",
+    );
+    console.log(`📊 Summary of created data:
+- 1 test user
+- 1 user settings record
+- ${vendorIds.length} vendors
+- ${truckIds.length} trucks
+- ${invoiceIds.length} invoices
+- 3 business rule categories
+- 7 business rules
+- 3 email templates`);
+
+    return null;
   },
 });
