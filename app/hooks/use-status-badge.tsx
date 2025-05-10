@@ -8,22 +8,15 @@ import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
 import { useDebounce } from "@/lib/hooks/use-debounce";
 
-// Status definitions
+// Status definitions according to schema
 export const STATUS_COLORS = {
-  needs_review: "bg-yellow-500",
-  approved: "bg-green-500",
-  rejected: "bg-red-500",
-  escalated: "bg-blue-500",
+  need_action: "bg-yellow-500",
+  escalated: "bg-purple-500",
 };
 
 export type InvoiceStatus = keyof typeof STATUS_COLORS;
 
-export const STATUS_ORDER: InvoiceStatus[] = [
-  "needs_review",
-  "approved",
-  "rejected",
-  "escalated",
-];
+export const STATUS_ORDER: InvoiceStatus[] = ["need_action", "escalated"];
 
 interface StatusBadgeProps {
   invoiceId: Id<"invoices"> | string;
@@ -68,7 +61,9 @@ export function StatusBadge({
             invoiceId,
             status: debouncedStatus,
           });
-          toast.success(`Invoice status updated to ${debouncedStatus}`);
+          toast.success(
+            `Invoice status updated to ${getStatusLabel(debouncedStatus)}`,
+          );
         } catch (error) {
           console.error("Failed to update invoice status:", error);
           toast.error("Failed to update invoice status");
@@ -89,18 +84,24 @@ export function StatusBadge({
     isUpdating,
   ]);
 
-  // Format status for display
-  const formattedStatus = status
-    .split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+  // Helper to get user-friendly status labels
+  const getStatusLabel = (status: InvoiceStatus): string => {
+    switch (status) {
+      case "need_action":
+        return "Needs Action";
+      case "escalated":
+        return "Escalated";
+      default:
+        return status;
+    }
+  };
 
   return (
     <Badge
       className={`cursor-pointer select-none ${STATUS_COLORS[status]} ${className}`}
       onClick={handleBadgeClick}
     >
-      {formattedStatus}
+      {getStatusLabel(status)}
     </Badge>
   );
 }
