@@ -35,12 +35,7 @@ export const getAllInvoices = query({
           total: v.number(),
         }),
       ),
-      status: v.union(
-        v.literal("needs_review"),
-        v.literal("approved"),
-        v.literal("rejected"),
-        v.literal("escalated"),
-      ),
+      status: v.union(v.literal("need_action"), v.literal("escalated")),
       _creationTime: v.number(),
     }),
   ),
@@ -85,7 +80,7 @@ export const getAllInvoices = query({
 //       totalAmount: args.totalAmount,
 //       notes: args.notes,
 //       items: args.items,
-//       status: "needs_review",
+//       status: "need_action",
 //     });
 
 //     return invoiceId;
@@ -124,12 +119,7 @@ export const getById = query({
         total: v.number(),
       }),
     ),
-    status: v.union(
-      v.literal("needs_review"),
-      v.literal("approved"),
-      v.literal("rejected"),
-      v.literal("escalated"),
-    ),
+    status: v.union(v.literal("need_action"), v.literal("escalated")),
     _creationTime: v.number(),
   }),
   handler: async (ctx, args) => {
@@ -272,12 +262,7 @@ export const getInvoiceById = query({
 export const updateInvoiceStatus = mutation({
   args: {
     invoiceId: v.union(v.id("invoices"), v.string()),
-    status: v.union(
-      v.literal("needs_review"),
-      v.literal("approved"),
-      v.literal("rejected"),
-      v.literal("escalated"),
-    ),
+    status: v.union(v.literal("need_action"), v.literal("escalated")),
   },
   handler: async (ctx, args) => {
     try {
@@ -402,6 +387,177 @@ export const getEnrichmentSuggestions = query({
           matchScore: 85,
         },
       ],
+    };
+  },
+});
+
+// Get invoice metrics for charts
+export const getInvoiceChartData = query({
+  args: {},
+  returns: v.object({
+    byStatus: v.array(
+      v.object({
+        status: v.string(),
+        count: v.number(),
+        amount: v.number(),
+      }),
+    ),
+    byMonth: v.array(
+      v.object({
+        month: v.string(),
+        count: v.number(),
+        amount: v.number(),
+        need_action: v.number(),
+        escalated: v.number(),
+      }),
+    ),
+    byTruck: v.array(
+      v.object({
+        truckId: v.id("trucks"),
+        count: v.number(),
+        amount: v.number(),
+      }),
+    ),
+    byVendor: v.array(
+      v.object({
+        vendorId: v.id("vendors"),
+        count: v.number(),
+        amount: v.number(),
+      }),
+    ),
+  }),
+  handler: async (ctx) => {
+    // Get all invoices
+    const invoices = await ctx.db.query("invoices").collect();
+
+    // Create status metrics
+    const statusMetrics = {
+      need_action: { count: 0, amount: 0 },
+      escalated: { count: 0, amount: 0 },
+    };
+
+    // Create month metrics
+    const monthlyData = new Map();
+    // Create truck metrics
+    const truckData = new Map();
+    // Create vendor metrics
+    const vendorData = new Map();
+
+    // Process each invoice
+    invoices.forEach((invoice) => {
+      const status = invoice.status;
+      const amount = invoice.totalAmount;
+      const date = new Date(invoice.dateIssued || invoice._creationTime);
+      const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+      const truckId = invoice.truckId;
+      const vendorId = invoice.vendorId;
+
+      // Update status metrics
+      if (status in statusMetrics) {
+        statusMetrics[status].count++;
+        statusMetrics[status].amount += amount;
+      }
+
+      // Update monthly metrics
+      if (!monthlyData.has(month)) {
+        monthlyData.set(month, {
+          month,
+          count: 0,
+          amount: 0,
+          need_action: 0,
+          escalated: 0,
+        });
+      }
+      const monthData = monthlyData.get(month);
+      monthData.count++;
+      monthData.amount += amount;
+      monthData[status]++;
+
+      // Update truck metrics
+      if (!truckData.has(truckId)) {
+        truckData.set(truckId, { truckId, count: 0, amount: 0 });
+      }
+      const truck = truckData.get(truckId);
+      truck.count++;
+      truck.amount += amount;
+
+      // Update vendor metrics
+      if (!vendorData.has(vendorId)) {
+        vendorData.set(vendorId, { vendorId, count: 0, amount: 0 });
+      }
+      const vendor = vendorData.get(vendorId);
+      vendor.count++;
+      vendor.amount += amount;
+    });
+
+    // Convert status metrics to array
+    const byStatus = Object.entries(statusMetrics).map(([status, data]) => ({
+      status,
+      count: data.count,
+      amount: data.amount,
+    }));
+
+    // Sort monthly data by month
+    const byMonth = Array.from(monthlyData.values()).sort((a, b) =>
+      a.month.localeCompare(b.month),
+    );
+
+    // Sort truck data by amount
+    const byTruck = Array.from(truckData.values())
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 10); // Top 10 trucks by spend
+
+    // Sort vendor data by amount
+    const byVendor = Array.from(vendorData.values())
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 10); // Top 10 vendors by spend
+
+    return {
+      byStatus,
+      byMonth,
+      byTruck,
+      byVendor,
+    };
+  },
+});
+
+// Fix any invoices with invalid status values
+export const fixInvoiceStatuses = mutation({
+  args: {},
+  returns: v.object({
+    fixed: v.number(),
+    message: v.string(),
+  }),
+  handler: async (ctx) => {
+    // Get all invoices
+    const invoices = await ctx.db.query("invoices").collect();
+
+    let fixedCount = 0;
+
+    // Loop through invoices and fix any with invalid statuses
+    for (const invoice of invoices) {
+      const status = invoice.status;
+
+      // Check if status is not one of the valid values
+      if (status !== "need_action" && status !== "escalated") {
+        // Update the invoice to use "need_action" status
+        await ctx.db.patch(invoice._id, {
+          status: "need_action",
+        });
+
+        fixedCount++;
+        console.log(
+          `Fixed invoice ${invoice.invoiceEid} with invalid status: ${status}`,
+        );
+      }
+    }
+
+    return {
+      fixed: fixedCount,
+      message:
+        fixedCount > 0
+          ? `Fixed ${fixedCount} invoices with invalid status values`
+          : "No invoices with invalid status values found",
     };
   },
 });

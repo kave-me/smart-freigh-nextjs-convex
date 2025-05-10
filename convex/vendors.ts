@@ -250,12 +250,7 @@ export const getInvoicesByVendorId = query({
       _creationTime: v.number(),
       invoiceEid: v.string(),
       dateIssued: v.number(),
-      status: v.union(
-        v.literal("needs_review"),
-        v.literal("approved"),
-        v.literal("rejected"),
-        v.literal("escalated"),
-      ),
+      status: v.union(v.literal("need_action"), v.literal("escalated")),
       totalAmount: v.number(),
       truckId: v.id("trucks"),
       vendorId: v.id("vendors"),
@@ -301,5 +296,60 @@ export const getInvoicesByVendorId = query({
       .collect();
 
     return invoices;
+  },
+});
+
+// Get vendor statistics for dashboard
+export const getVendorStatistics = query({
+  args: {},
+  returns: v.array(
+    v.object({
+      vendorId: v.id("vendors"),
+      vendorEid: v.string(),
+      name: v.string(),
+      state: v.string(),
+      city: v.string(),
+      invoiceCount: v.number(),
+      totalSpend: v.number(),
+      avgInvoiceAmount: v.number(),
+    }),
+  ),
+  handler: async (ctx) => {
+    // Get all vendors
+    const vendors = await ctx.db.query("vendors").collect();
+
+    // For each vendor, get invoice statistics
+    const vendorStats = await Promise.all(
+      vendors.map(async (vendor) => {
+        // Get all invoices for this vendor
+        const invoices = await ctx.db
+          .query("invoices")
+          .withIndex("by_vendorId", (q) => q.eq("vendorId", vendor._id))
+          .collect();
+
+        // Calculate statistics
+        const invoiceCount = invoices.length;
+        const totalSpend = invoices.reduce(
+          (sum, inv) => sum + inv.totalAmount,
+          0,
+        );
+        const avgInvoiceAmount =
+          invoiceCount > 0 ? totalSpend / invoiceCount : 0;
+
+        return {
+          vendorId: vendor._id,
+          vendorEid: vendor.vendorEid,
+          name: vendor.name,
+          state: vendor.state,
+          city: vendor.city,
+          invoiceCount,
+          totalSpend,
+          avgInvoiceAmount,
+        };
+      }),
+    );
+
+    // Sort by total spend (highest first)
+    return vendorStats.sort((a, b) => b.totalSpend - a.totalSpend);
   },
 });

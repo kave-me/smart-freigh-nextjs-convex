@@ -19,6 +19,7 @@ import type * as http from "../http.js";
 import type * as invoices from "../invoices.js";
 import type * as seed from "../seed.js";
 import type * as trucks from "../trucks.js";
+import type * as utils from "../utils.js";
 import type * as vendors from "../vendors.js";
 
 /**
@@ -36,6 +37,7 @@ declare const fullApi: ApiFromModules<{
   invoices: typeof invoices;
   seed: typeof seed;
   trucks: typeof trucks;
+  utils: typeof utils;
   vendors: typeof vendors;
 }>;
 export declare const api: FilterApi<

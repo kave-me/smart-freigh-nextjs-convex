@@ -208,12 +208,7 @@ export const getInvoicesByTruckId = query({
       _creationTime: v.number(),
       invoiceEid: v.string(),
       dateIssued: v.number(),
-      status: v.union(
-        v.literal("needs_review"),
-        v.literal("approved"),
-        v.literal("rejected"),
-        v.literal("escalated"),
-      ),
+      status: v.union(v.literal("need_action"), v.literal("escalated")),
       totalAmount: v.number(),
       truckId: v.id("trucks"),
       vendorId: v.id("vendors"),
@@ -259,5 +254,58 @@ export const getInvoicesByTruckId = query({
       .collect();
 
     return invoices;
+  },
+});
+
+// Get truck statistics for dashboard
+export const getTruckStatistics = query({
+  args: {},
+  returns: v.array(
+    v.object({
+      truckId: v.id("trucks"),
+      truckEid: v.string(),
+      make: v.string(),
+      model: v.string(),
+      invoiceCount: v.number(),
+      totalSpend: v.number(),
+      avgInvoiceAmount: v.number(),
+    }),
+  ),
+  handler: async (ctx) => {
+    // Get all trucks
+    const trucks = await ctx.db.query("trucks").collect();
+
+    // For each truck, get invoice statistics
+    const truckStats = await Promise.all(
+      trucks.map(async (truck) => {
+        // Get all invoices for this truck
+        const invoices = await ctx.db
+          .query("invoices")
+          .withIndex("by_truckId", (q) => q.eq("truckId", truck._id))
+          .collect();
+
+        // Calculate statistics
+        const invoiceCount = invoices.length;
+        const totalSpend = invoices.reduce(
+          (sum, inv) => sum + inv.totalAmount,
+          0,
+        );
+        const avgInvoiceAmount =
+          invoiceCount > 0 ? totalSpend / invoiceCount : 0;
+
+        return {
+          truckId: truck._id,
+          truckEid: truck.truckEid,
+          make: truck.make,
+          model: truck.model,
+          invoiceCount,
+          totalSpend,
+          avgInvoiceAmount,
+        };
+      }),
+    );
+
+    // Sort by total spend (highest first)
+    return truckStats.sort((a, b) => b.totalSpend - a.totalSpend);
   },
 });

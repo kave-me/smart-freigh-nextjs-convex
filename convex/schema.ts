@@ -61,12 +61,7 @@ export default defineSchema(
           total: v.number(),
         }),
       ),
-      status: v.union(
-        v.literal("needs_review"),
-        v.literal("approved"),
-        v.literal("rejected"),
-        v.literal("escalated"),
-      ),
+      status: v.union(v.literal("need_action"), v.literal("escalated")),
     })
       .index("by_userId", ["userId"])
       .index("by_vendorId", ["vendorId"])
