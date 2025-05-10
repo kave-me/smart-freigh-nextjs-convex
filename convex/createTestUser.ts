@@ -9,6 +9,7 @@ export const createTestUser = mutation({
       name: "Test User",
       email: "test@example.com",
       isAnonymous: false,
+      clerkId: "test_" + Math.random().toString(36).substring(2, 15),
     });
     return null;
   },

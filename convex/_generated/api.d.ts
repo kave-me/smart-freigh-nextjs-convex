@@ -14,11 +14,16 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as auth from "../auth.js";
+import type * as businessRules from "../businessRules.js";
 import type * as createTestUser from "../createTestUser.js";
+import type * as emailTemplates from "../emailTemplates.js";
 import type * as http from "../http.js";
 import type * as invoices from "../invoices.js";
+import type * as myFunctions from "../myFunctions.js";
 import type * as seed from "../seed.js";
+import type * as storage from "../storage.js";
 import type * as trucks from "../trucks.js";
+import type * as userSettings from "../userSettings.js";
 import type * as utils from "../utils.js";
 import type * as vendors from "../vendors.js";
 
@@ -32,11 +37,16 @@ import type * as vendors from "../vendors.js";
  */
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  businessRules: typeof businessRules;
   createTestUser: typeof createTestUser;
+  emailTemplates: typeof emailTemplates;
   http: typeof http;
   invoices: typeof invoices;
+  myFunctions: typeof myFunctions;
   seed: typeof seed;
+  storage: typeof storage;
   trucks: typeof trucks;
+  userSettings: typeof userSettings;
   utils: typeof utils;
   vendors: typeof vendors;
 }>;

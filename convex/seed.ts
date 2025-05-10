@@ -211,3 +211,65 @@ All associated with user: ${userId}`);
     return null;
   },
 });
+
+// Add seed function for business rules
+export const seedBusinessRules = mutation({
+  args: {},
+  handler: async (ctx) => {
+    // Find the first user (our test user)
+    const user = await ctx.db.query("users").first();
+    if (!user) throw new Error("No user found to seed data");
+
+    // Create categories
+    const warrantyCategoryId = await ctx.db.insert("businessRuleCategories", {
+      name: "Warranty",
+      userId: user._id,
+    });
+
+    const partLaborCategoryId = await ctx.db.insert("businessRuleCategories", {
+      name: "Part and Labor",
+      userId: user._id,
+    });
+
+    const etcCategoryId = await ctx.db.insert("businessRuleCategories", {
+      name: "ETC",
+      userId: user._id,
+    });
+
+    // Add rules to warranty category
+    await ctx.db.insert("businessRules", {
+      name: "Rule 2025",
+      categoryId: warrantyCategoryId,
+      enabled: true,
+      userId: user._id,
+    });
+
+    await ctx.db.insert("businessRules", {
+      name: "Rule 2023",
+      categoryId: warrantyCategoryId,
+      enabled: false,
+      userId: user._id,
+    });
+
+    await ctx.db.insert("businessRules", {
+      name: "Rule 2022",
+      categoryId: warrantyCategoryId,
+      enabled: false,
+      userId: user._id,
+    });
+
+    // Add rule to part & labor category
+    await ctx.db.insert("businessRules", {
+      name: "Parts 2025",
+      categoryId: partLaborCategoryId,
+      enabled: true,
+      userId: user._id,
+    });
+
+    return {
+      warrantyCategoryId,
+      partLaborCategoryId,
+      etcCategoryId,
+    };
+  },
+});

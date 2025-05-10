@@ -1,5 +1,7 @@
 import { query } from "./_generated/server";
 import { v } from "convex/values";
+import { DatabaseReader } from "./_generated/server";
+import { getCurrentUserId } from "./auth";
 
 /**
  * Function to format currency values
@@ -42,7 +44,6 @@ export const filterByDateRange = query({
     }),
   ),
   handler: async (ctx, args) => {
-    const now = Date.now();
     const cutoff = new Date();
     cutoff.setMonth(cutoff.getMonth() - args.months);
 
@@ -112,4 +113,10 @@ export function sumBy<T>(items: T[], field: keyof T): number {
     const value = Number(item[field]);
     return sum + (isNaN(value) ? 0 : value);
   }, 0);
+}
+
+// Helper function to get the current user ID for use in Convex functions
+export async function getAuthUserId(ctx: { db: DatabaseReader }) {
+  // In MVP, we're just using the first user in the database
+  return await getCurrentUserId(ctx);
 }

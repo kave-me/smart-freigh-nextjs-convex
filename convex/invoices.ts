@@ -123,16 +123,22 @@ export const getById = query({
     _creationTime: v.number(),
   }),
   handler: async (ctx, args) => {
-    const invoice = await ctx.db
-      .query("invoices")
-      .withIndex("by_invoiceEid", (q) => q.eq("invoiceEid", args.id))
-      .unique();
+    try {
+      const invoice = await ctx.db
+        .query("invoices")
+        .withIndex("by_invoiceEid", (q) => q.eq("invoiceEid", args.id))
+        .unique();
 
-    if (!invoice) {
-      throw new Error(`Invoice with ID ${args.id} not found`);
+      if (!invoice) {
+        console.warn(`Invoice with ID ${args.id} not found in getById`);
+        throw new Error(`Invoice with ID ${args.id} not found`);
+      }
+
+      return invoice;
+    } catch (error) {
+      console.error(`Error in getById for invoice ${args.id}:`, error);
+      throw error; // We still need to throw here since the return type is not optional
     }
-
-    return invoice;
   },
 });
 
@@ -223,20 +229,41 @@ export const getEscalationEmail = query({
     signature: v.string(),
   }),
   handler: async (ctx, args) => {
-    const invoice = await ctx.db
-      .query("invoices")
-      .withIndex("by_invoiceEid", (q) => q.eq("invoiceEid", args.invoiceId))
-      .unique();
+    try {
+      const invoice = await ctx.db
+        .query("invoices")
+        .withIndex("by_invoiceEid", (q) => q.eq("invoiceEid", args.invoiceId))
+        .unique();
 
-    if (!invoice) {
-      throw new Error(`Invoice with ID ${args.invoiceId} not found`);
+      if (!invoice) {
+        // Instead of throwing an error, log a warning and return a default message
+        console.warn(
+          `Invoice with ID ${args.invoiceId} not found for escalation email`,
+        );
+        return {
+          body: `Note: This is a template as the invoice #${args.invoiceId} was not found.\n\nSubject: Invoice Review Required\n\nDear Team,\n\nPlease review this invoice for potential policy violations.\n\nBest regards,`,
+          signature:
+            "The SmartFreight Team\nsupport@smartfreight.com\n1-800-FREIGHT",
+        };
+      }
+
+      return {
+        body: `Subject: Invoice Review Required - Invoice #${args.invoiceId}\n\nDear Team,\n\nThis invoice requires your attention due to potential policy violations. Please review the attached analysis and take appropriate action.\n\nBest regards,`,
+        signature:
+          "The SmartFreight Team\nsupport@smartfreight.com\n1-800-FREIGHT",
+      };
+    } catch (error) {
+      console.error(
+        `Error in getEscalationEmail for invoice ${args.invoiceId}:`,
+        error,
+      );
+      // Return a default message in case of error
+      return {
+        body: `Note: An error occurred while processing invoice #${args.invoiceId}.\n\nSubject: Invoice Review Required\n\nDear Team,\n\nPlease review this invoice for potential policy violations.\n\nBest regards,`,
+        signature:
+          "The SmartFreight Team\nsupport@smartfreight.com\n1-800-FREIGHT",
+      };
     }
-
-    return {
-      body: `Subject: Invoice Review Required - Invoice #${args.invoiceId}\n\nDear Team,\n\nThis invoice requires your attention due to potential policy violations. Please review the attached analysis and take appropriate action.\n\nBest regards,`,
-      signature:
-        "The SmartFreight Team\nsupport@smartfreight.com\n1-800-FREIGHT",
-    };
   },
 });
 
@@ -356,38 +383,49 @@ export const getEnrichmentSuggestions = query({
     ),
   }),
   handler: async (ctx, args) => {
-    const invoice = await ctx.db
-      .query("invoices")
-      .filter((q) => q.eq(q.field("invoiceEid"), args.invoiceId))
-      .first();
+    try {
+      const invoice = await ctx.db
+        .query("invoices")
+        .withIndex("by_invoiceEid", (q) => q.eq("invoiceEid", args.invoiceId))
+        .unique();
 
-    if (!invoice) {
-      throw new Error("Invoice not found");
+      if (!invoice) {
+        // Instead of throwing an error, return an empty array
+        console.warn(`Invoice not found for ID: ${args.invoiceId}`);
+        return { items: [] };
+      }
+
+      // For now, return mock data
+      return {
+        items: [
+          {
+            id: "1",
+            description: "3-in-1 Airline Set with Gladhands (15 feet)",
+            type: "part",
+            quantity: 1,
+            unitCost: 165,
+            totalCost: 165,
+            matchScore: 98,
+          },
+          {
+            id: "2",
+            description: "2-in-1 Airline Set with Gladhands (15 feet)",
+            type: "part",
+            quantity: 1,
+            unitCost: 100,
+            totalCost: 100,
+            matchScore: 85,
+          },
+        ],
+      };
+    } catch (error) {
+      console.error(
+        `Error in getEnrichmentSuggestions for invoice ${args.invoiceId}:`,
+        error,
+      );
+      // Return empty items instead of throwing an error
+      return { items: [] };
     }
-
-    // For now, return mock data
-    return {
-      items: [
-        {
-          id: "1",
-          description: "3-in-1 Airline Set with Gladhands (15 feet)",
-          type: "part",
-          quantity: 1,
-          unitCost: 165,
-          totalCost: 165,
-          matchScore: 98,
-        },
-        {
-          id: "2",
-          description: "2-in-1 Airline Set with Gladhands (15 feet)",
-          type: "part",
-          quantity: 1,
-          unitCost: 100,
-          totalCost: 100,
-          matchScore: 85,
-        },
-      ],
-    };
   },
 });
 
