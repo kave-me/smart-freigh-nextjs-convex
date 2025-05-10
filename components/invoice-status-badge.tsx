@@ -10,20 +10,13 @@ import { useDebounce } from "@/lib/hooks/use-debounce";
 
 // Status definitions
 export const STATUS_COLORS = {
-  needs_review: "bg-yellow-500",
-  in_process: "bg-blue-500",
-  completed: "bg-green-500",
+  need_action: "bg-yellow-500",
   escalated: "bg-purple-500",
 };
 
 export type StatusType = keyof typeof STATUS_COLORS;
 
-export const STATUS_ORDER: StatusType[] = [
-  "needs_review",
-  "in_process",
-  "completed",
-  "escalated",
-];
+export const STATUS_ORDER: StatusType[] = ["need_action", "escalated"];
 
 interface InvoiceStatusBadgeProps {
   invoiceId: Id<"invoices"> | string;

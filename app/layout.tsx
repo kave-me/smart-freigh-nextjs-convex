@@ -5,6 +5,7 @@ import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import ConvexClientProvider from "@/components/ConvexClientProvider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "sonner";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -19,8 +20,11 @@ export const metadata: Metadata = {
   title: "SmartFreight - Intelligent freight escalation platform",
   description:
     "Efficiently manage your invoices, track payments, and handle escalations with our intelligent invoice management system.",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || "https://smartfreight.example.com",
+  ),
   icons: {
-    icon: "/convex.svg",
+    icon: "/logo.png",
   },
   openGraph: {
     title: "SmartFreight - Intelligent freight escalation platform",
